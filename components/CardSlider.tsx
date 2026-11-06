@@ -22,7 +22,7 @@ function Block({ block }: { block: SlideBlock }) {
           {block.items.map((item) => (
             <li key={item} className="text-ink">
               <span aria-hidden>☞ </span>
-              <a href="#" className="underline">
+              <a className="underline">
                 {item}
               </a>
             </li>
@@ -81,7 +81,6 @@ export function CardSlider() {
               {slide.button && (
                 <div className="absolute right-[15px] bottom-[15px]">
                   <a
-                    href="#"
                     className="relative inline-block w-[173px] rounded-[25px] bg-ink py-1 pr-5 pl-2.5 text-center text-[12px] font-medium text-white tb:w-[190px] tb:text-[13px]"
                   >
                     {slide.button}

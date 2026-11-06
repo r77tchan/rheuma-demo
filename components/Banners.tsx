@@ -11,7 +11,7 @@ export function Banners() {
               key={index}
               className="mb-5 w-[47%] tb:mx-5 tb:w-[180px] pc:mb-2.5 pc:min-w-0"
             >
-              <a href="#" className="block">
+              <a className="block">
                 <Placeholder
                   className="h-[51px] w-full max-w-[180px] border border-[#999]"
                   label="ダミーのバナー"

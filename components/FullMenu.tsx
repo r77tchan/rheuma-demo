@@ -35,13 +35,13 @@ function ChildItem({ child }: { child: NavChild }) {
                 className="relative pl-[25px] text-[16px] leading-[2] font-normal"
               >
                 <span aria-hidden className="absolute top-4 left-0 h-0.5 w-[15px] bg-brand" />
-                <a href="#">{grandchild.label}</a>
+                <a>{grandchild.label}</a>
               </li>
             ))}
           </ul>
         </>
       ) : (
-        <a href="#">
+        <a>
           {child.label}
           {child.pdf && <PdfMark />}
         </a>
@@ -120,7 +120,7 @@ export function FullMenuPanel({
         aria-label="全体メニュー"
         className="mx-auto max-w-[1370px]"
         onClick={(event) => {
-          if ((event.target as Element).closest("a")) onNavigate();
+          if ((event.target as Element).closest("a[href]")) onNavigate();
         }}
       >
         <ul>
@@ -147,7 +147,7 @@ export function FullMenu(props: FullMenuProps) {
           ) : (
             <ul key={item.label}>
               <li className={plainItem}>
-                <a href="#">{item.label}</a>
+                <a>{item.label}</a>
               </li>
             </ul>
           ),
@@ -179,7 +179,8 @@ export function FullMenu(props: FullMenuProps) {
           <button
             type="button"
             aria-label="検索（ダミー）"
-            className="flex size-11 shrink-0 cursor-pointer items-center justify-center bg-brand"
+            data-dummy
+            className="flex size-11 shrink-0 items-center justify-center bg-brand"
           >
             <svg aria-hidden viewBox="0 0 24 24" className="size-[18px] fill-none stroke-white stroke-[2.5]">
               <circle cx="10.5" cy="10.5" r="6.5" />

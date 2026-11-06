@@ -22,7 +22,7 @@ export function ContentCards() {
               <ul className="mt-2.5 ml-[30px]">
                 {card.links.map((link) => (
                   <li key={link.label} className="text-[18px] tracking-[.1em]">
-                    <a href="#" className="block text-white">
+                    <a className="block text-white">
                       {link.label}
                       {link.pdf && <PdfMark />}
                     </a>

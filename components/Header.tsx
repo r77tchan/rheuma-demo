@@ -12,8 +12,7 @@ import { IconPlaceholder, LogoPlaceholder, PdfMark } from "./parts";
 export const navDropdownClass =
   "invisible absolute top-8 -left-5 z-[2000] w-[200px] bg-white opacity-0 shadow-[0_0_5px_0_#aaa] transition-[opacity,visibility] duration-300 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100";
 
-export const navDropdownLinkClass =
-  "block px-5 py-2.5 text-[16px] font-normal transition-colors duration-300 hover:bg-brand hover:text-white hover:opacity-100";
+export const navDropdownLinkClass = "block px-5 py-2.5 text-[16px] font-normal";
 
 /** トップではロゴを400pxスクロールするまで隠す。下層ページでは最初から表示する。 */
 export function Header({ home }: { home: boolean }) {
@@ -50,7 +49,7 @@ export function Header({ home }: { home: boolean }) {
                     <ul className={navDropdownClass}>
                       {item.children.map((child) => (
                         <li key={child.label}>
-                          <a href="#" className={navDropdownLinkClass}>
+                          <a className={navDropdownLinkClass}>
                             {child.label}
                             {child.pdf && <PdfMark />}
                           </a>
@@ -59,12 +58,12 @@ export function Header({ home }: { home: boolean }) {
                     </ul>
                   </>
                 ) : (
-                  <a href="#">{item.label}</a>
+                  <a>{item.label}</a>
                 )}
               </li>
             ))}
             <li className="mr-[3em]">
-              <a href="#" aria-label="SNSのダミーリンク">
+              <a>
                 <IconPlaceholder className="size-10 rounded-full" />
               </a>
             </li>

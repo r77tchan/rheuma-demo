@@ -21,7 +21,6 @@ function Greeting() {
         </p>
         <div className="link-fade mt-[2em] text-center tb:mt-[25px] tb:text-left">
           <a
-            href="#"
             className="relative inline-block w-[200px] rounded-[25px] bg-brand py-[7px] text-center text-white"
           >
             {greeting.button}

@@ -7,36 +7,27 @@ import { IconPlaceholder } from "../parts";
 import { SubSiteHeader } from "../SubSiteHeader";
 import { SenmonFullMenu } from "./SenmonFullMenu";
 
-/** 子メニューの1行。孫メニューは、マウスを乗せると右に開く。元サイトと同じくPDFのマークは出さない。 */
+/** 子メニューの1行。孫メニューは、リンクが動かなくてもマウスを乗せると右に開く。元サイトと同じくPDFのマークは出さない。 */
 function NavChildItem({ child }: { child: NavChild }) {
   if (!child.children) {
     return (
       <li>
-        <a href="#" className={navDropdownLinkClass}>
-          {child.label}
-        </a>
+        <a className={navDropdownLinkClass}>{child.label}</a>
       </li>
     );
   }
 
   return (
     <li className="group/sub relative">
-      <a
-        href="#"
-        className={`${navDropdownLinkClass} group-focus-within/sub:bg-brand group-focus-within/sub:text-white group-hover/sub:bg-brand group-hover/sub:text-white`}
-      >
-        {child.label}
-      </a>
+      <a className={navDropdownLinkClass}>{child.label}</a>
       <span
         aria-hidden
-        className="absolute inset-y-0 right-2.5 m-auto block size-[5px] rotate-45 border-t border-r border-[#999]"
+        className="pointer-events-none absolute inset-y-0 right-2.5 m-auto block size-[5px] rotate-45 border-t border-r border-[#999]"
       />
-      <ul className="invisible absolute top-0 left-[201px] z-[2] w-[200px] bg-white opacity-0 shadow-[0_0_5px_0_#aaa] transition-[opacity,visibility] duration-300 group-focus-within/sub:visible group-focus-within/sub:opacity-100 group-hover/sub:visible group-hover/sub:opacity-100">
+      <ul className="invisible absolute top-0 left-[201px] z-[2] w-[200px] bg-white opacity-0 shadow-[0_0_5px_0_#aaa] transition-[opacity,visibility] duration-300 group-hover/sub:visible group-hover/sub:opacity-100">
         {child.children.map((grandchild) => (
           <li key={grandchild.label}>
-            <a href="#" className={navDropdownLinkClass}>
-              {grandchild.label}
-            </a>
+            <a className={navDropdownLinkClass}>{grandchild.label}</a>
           </li>
         ))}
       </ul>
@@ -67,12 +58,12 @@ export function SenmonHeader() {
               </ul>
             </>
           ) : (
-            <a href="#">{item.label}</a>
+            <a>{item.label}</a>
           )}
         </li>
       ))}
       <li className="mr-[3em]">
-        <a href="#" aria-label="SNSのダミーリンク">
+        <a>
           <IconPlaceholder className="size-10 rounded-full" />
         </a>
       </li>

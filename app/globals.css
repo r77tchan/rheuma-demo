@@ -36,13 +36,27 @@
     font-size: 16px;
     line-height: 1.8;
   }
+
+  /* 動かないリンクとボタン。リンクは href を付けず、ボタンには data-dummy を付ける。押したときの案内は DummyLinkToast */
+  a:not([href]),
+  [data-dummy] {
+    cursor: not-allowed;
+  }
+
+  /* iOSのSafariは、操作できる要素に見えないものをタップしても click を document まで届けない。pointer なら届く */
+  @media (hover: none), (pointer: coarse) {
+    a:not([href]),
+    [data-dummy] {
+      cursor: pointer;
+    }
+  }
 }
 
 @layer components {
   /* マウスを乗せたリンクを薄くする（タッチ端末向けの幅では無効） */
   @media (min-width: 960px) {
-    .link-fade a:hover,
-    .link-fade button:hover {
+    .link-fade a[href]:hover,
+    .link-fade button:not([data-dummy]):hover {
       opacity: 0.7;
       transition: opacity 0.3s;
     }

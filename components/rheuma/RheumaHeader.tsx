@@ -22,13 +22,13 @@ export function RheumaHeader() {
         </li>
       ))}
       <li>
-        <a href="#" className="mr-[3em]">
+        <a className="mr-[3em]">
           <IconPlaceholder className="mr-[7px] mb-[2.5px] inline-block size-[17px] align-middle" />
           {rheumaFacility}
         </a>
       </li>
       <li>
-        <a href="#" aria-label="SNSのダミーリンク" className="mr-[3em] block">
+        <a className="mr-[3em] block">
           <IconPlaceholder className="size-10 rounded-full" />
         </a>
       </li>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 
-/** サイト内のリンク。行き先のページがまだない項目は # にする。 */
+/** サイト内のリンク。行き先のページがまだない項目は href を付けない（押すと DummyLinkToast が案内する）。 */
 export function SiteLink({
   href,
   className,
@@ -16,9 +16,7 @@ export function SiteLink({
       {children}
     </Link>
   ) : (
-    <a href="#" className={className}>
-      {children}
-    </a>
+    <a className={className}>{children}</a>
   );
 }
 

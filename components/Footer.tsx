@@ -23,7 +23,6 @@ export function Footer({
             {footer.links.map((label, index) => (
               <li key={`${label}-${index}`}>
                 <a
-                  href="#"
                   className={`text-[14px] tb:text-[15px] ${
                     index < footer.links.length - 1
                       ? "mr-2.5 border-r border-ink pr-2.5 tb:mr-10 tb:border-r-0 tb:pr-0"
@@ -35,11 +34,7 @@ export function Footer({
               </li>
             ))}
           </ul>
-          <a
-            href="#"
-            aria-label="SNSのダミーリンク"
-            className="mx-auto block w-[46px] tb:hidden"
-          >
+          <a className="mx-auto block w-[46px] tb:hidden">
             <IconPlaceholder className="size-[46px] rounded-full" />
           </a>
         </div>
