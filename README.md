@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# rheuma-demo
 
-## Getting Started
+トップページのレイアウトモック
 
-First, run the development server:
+既存サイトのトップページを参考に、レイアウトと配色を再現したモックです。画像とロゴはグレーのダミー、文言もすべてダミーで、参考サイトの文言や画像は使っていません。
+
+- PC・タブレット・スマホの3つの幅に対応（切り替えは 768px と 1025px）
+- ドロップダウン、全画面メニュー、スマホのスライダーなどの動きも再現
+- 今は静的なページ。お知らせなど一部を、後で動的にするかもしれません
+
+## 見る
+
+| | URL |
+| --- | --- |
+| 公開中のモック | https://rheuma-demo.vercel.app |
+
+`main` にプッシュすると、Vercel に自動でデプロイされます。
+
+## 手元で動かす
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 で開きます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 開発について
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+開発は AI（Claude Code）で行っています。作業のルールは [AGENTS.md](AGENTS.md) にあります。
 
-## Learn More
+- [doc/指示.md](doc/指示.md)：プロジェクトの目的とルール
+- [doc/メモ.md](doc/メモ.md)：決まったこと・分かったことのメモ
+- [components/](components/)：画面の部品
+- [data/site.ts](data/site.ts)：画面に表示するダミーの文言
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+技術スタックは Next.js（App Router）、TypeScript、Tailwind CSS、Vercel です。
