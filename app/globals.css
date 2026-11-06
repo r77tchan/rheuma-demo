@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-lato), var(--font-noto-sans), "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  --font-serif: var(--font-noto-serif), "Yu Mincho", YuMincho, serif;
+}
+
+@theme {
+  /* 参考サイトの切り替え幅（〜767px / 768〜1024px / 1025px〜）に合わせる */
+  --breakpoint-tb: 48rem;
+  --breakpoint-pc: 64.0625rem;
+
+  /* 配色は参考サイトと同じ */
+  --color-ink: #333333;
+  --color-brand: #0056ad;
+  --color-brand-line: #005aa6;
+  --color-sky: #1d85cc;
+  --color-pink: #ff9baf;
+  --color-teal: #00aaaa;
+  --color-greeting: #e9f0f9;
+  --color-marker: #c7e0ee;
+  --color-news-line: #5d89b6;
+  --color-date: #1a4f3a;
+  --color-banner: #f6f7f9;
+  --color-menu: #f2f2f2;
+
+  /* 画像の代わりに使うグレー */
+  --color-placeholder: #c4c4c4;
+}
+
+@layer base {
+  body {
+    background-color: #ffffff;
+    color: var(--color-ink);
+    font-size: 16px;
+    line-height: 1.8;
+  }
+}
+
+@layer components {
+  /* マウスを乗せたリンクを薄くする（タッチ端末向けの幅では無効） */
+  @media (min-width: 960px) {
+    .link-fade a:hover,
+    .link-fade button:hover {
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+  }
+}
