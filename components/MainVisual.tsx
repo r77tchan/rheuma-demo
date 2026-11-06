@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { guides } from "@/data/site";
 import { Chevron, IconPlaceholder, LogoPlaceholder, Placeholder } from "./parts";
 
@@ -32,14 +33,14 @@ export function MainVisual() {
                     ))}
                   </p>
                   <div className="link-fade">
-                    <a
-                      href="#"
+                    <Link
+                      href={guide.href}
                       className={`relative mt-2.5 inline-block w-full max-w-[285px] rounded-[35px] py-2 text-[12px] text-white tb:w-[285px] tb:text-[15px] pc:py-[5px] ${guide.color}`}
                     >
                       <IconPlaceholder className="absolute inset-y-0 left-5 m-auto size-5 rounded-full" />
                       {guide.button}
                       <Chevron className="right-5 size-2.5 border-white" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

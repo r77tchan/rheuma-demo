@@ -92,7 +92,7 @@ export const menuListClass =
 /** 線の枠の下の小さなリンク。 */
 export const menuOtherItemClass = "mb-5 text-[16px] tb:mb-[30px] tb:pr-2.5 tb:not-first:ml-[85px]";
 
-type FullMenuProps = {
+export type FullMenuProps = {
   id: string;
   open: boolean;
   pastHeader: boolean;
@@ -153,9 +153,9 @@ export function FullMenu(props: FullMenuProps) {
           ),
         )}
         <ul>
-          {fullMenu.extras.map((label) => (
-            <li key={label} className={plainItem}>
-              <a href="#">{label}</a>
+          {fullMenu.extras.map((item) => (
+            <li key={item.label} className={plainItem}>
+              <SiteLink href={item.href}>{item.label}</SiteLink>
             </li>
           ))}
         </ul>

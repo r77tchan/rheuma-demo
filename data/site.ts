@@ -35,7 +35,11 @@ export const globalNav: NavItem[] = [
 
 export const fullMenu = {
   first: { label: "トップページ", href: "/" } satisfies LinkItem,
-  extras: ["リウマチ月間講演会", "患者さん・一般の方", "医療関係者の皆さま"],
+  extras: [
+    { label: "リウマチ月間講演会" },
+    { label: "患者さん・一般の方", href: "/rheuma/" },
+    { label: "医療関係者の皆さま", href: "/senmon/" },
+  ] satisfies LinkItem[],
   others: [
     { label: "Whats's new", href: "/news/" },
     { label: "リンク" },
@@ -48,7 +52,7 @@ export const fullMenu = {
 export const sideMenu: LinkItem[] = [
   { label: "財団トップ", href: "/" },
   { label: "患者・一般", href: "/rheuma/" },
-  { label: "医療関係者" },
+  { label: "医療関係者", href: "/senmon/" },
   { label: "寄付のお願い" },
 ];
 
@@ -57,12 +61,14 @@ export const guides = [
     title: "リウマチを知ろう!",
     lines: ["ここに説明テキストが", "入ります。ダミーの文章です"],
     button: "患者さん・一般向け情報",
+    href: "/rheuma/",
     color: "bg-pink",
   },
   {
     title: "医療関係者のみなさんへ",
     lines: ["ここには説明のテキストが入ります。", "ダミーの文章です"],
     button: "医療関係者向け情報",
+    href: "/senmon/",
     color: "bg-teal",
   },
 ];

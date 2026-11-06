@@ -1,16 +1,17 @@
 "use client";
 
 import { rheumaMenu, rheumaMenuColumns } from "@/data/rheuma";
-import { FullMenuPanel, menuListClass, menuOtherItemClass, MenuGroup } from "../FullMenu";
+import {
+  FullMenuPanel,
+  menuListClass,
+  menuOtherItemClass,
+  MenuGroup,
+  type FullMenuProps,
+} from "../FullMenu";
 import { IconPlaceholder, SiteLink } from "../parts";
 
 /** /rheuma/ の全画面メニュー。 */
-export function RheumaFullMenu(props: {
-  id: string;
-  open: boolean;
-  pastHeader: boolean;
-  onNavigate: () => void;
-}) {
+export function RheumaFullMenu(props: FullMenuProps) {
   return (
     <FullMenuPanel {...props} first={rheumaMenu.first}>
       <div className={menuListClass}>

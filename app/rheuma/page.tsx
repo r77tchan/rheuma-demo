@@ -1,5 +1,6 @@
 import { Placeholder } from "@/components/parts";
 import { RheumaTopNews } from "@/components/rheuma/RheumaTopNews";
+import { rheumaSite } from "@/data/rheuma";
 
 /** お知らせ以外のカードの代わりに置くグレーの枠。高さは元サイトの3つの幅（1440 / 900 / 390px）に揃えてある。 */
 function Frame({ className }: { className: string }) {
@@ -12,9 +13,17 @@ export default function RheumaHomePage() {
       <section className="px-5 pt-5 tb:pt-10 pc:flex pc:justify-between pc:px-[100px] pc:pt-[30px]">
         {/* 781px は元サイトのメイン画像の幅。お知らせ欄との幅の取り合いを同じにする */}
         <div className="pc:w-[781px]">
+          <p className="relative w-[270px] rounded-[10px] bg-[#46c6da] py-2.5 text-center text-[26px] font-medium text-white tb:w-[360px] tb:text-[32px]">
+            {rheumaSite.catchphrase}
+            <span
+              aria-hidden
+              className="absolute top-full left-1/2 -translate-x-1/2 border-[16px] border-transparent border-t-[#46c6da]"
+            />
+          </p>
+          {/* キャッチコピー */}
           <Placeholder
             label="ダミーの枠"
-            className="mb-2.5 h-[163.8px] tb:mb-5 tb:h-[152.6px] pc:h-[197.6px]"
+            className="mt-[25px] mb-2.5 h-[72px] tb:mt-[30px] tb:mb-5 tb:h-[45px] pc:h-[90px]"
           />
           <Placeholder
             label="ダミーの枠"

@@ -8,6 +8,13 @@ import { FullMenu } from "./FullMenu";
 import { MenuButton } from "./MenuButton";
 import { IconPlaceholder, LogoPlaceholder, PdfMark } from "./parts";
 
+/** ナビの項目にマウスを乗せると開く子メニュー。親の li に group と relative を付ける。 */
+export const navDropdownClass =
+  "invisible absolute top-8 -left-5 z-[2000] w-[200px] bg-white opacity-0 shadow-[0_0_5px_0_#aaa] transition-[opacity,visibility] duration-300 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100";
+
+export const navDropdownLinkClass =
+  "block px-5 py-2.5 text-[16px] font-normal transition-colors duration-300 hover:bg-brand hover:text-white hover:opacity-100";
+
 /** トップではロゴを400pxスクロールするまで隠す。下層ページでは最初から表示する。 */
 export function Header({ home }: { home: boolean }) {
   const { menuId, menuOpen, setMenuOpen } = useFullMenu();
@@ -40,13 +47,10 @@ export function Header({ home }: { home: boolean }) {
                     <button type="button" className="cursor-pointer">
                       {item.label}
                     </button>
-                    <ul className="invisible absolute top-8 -left-5 z-[2000] w-[200px] bg-white opacity-0 shadow-[0_0_5px_0_#aaa] transition-[opacity,visibility] duration-300 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                    <ul className={navDropdownClass}>
                       {item.children.map((child) => (
                         <li key={child.label}>
-                          <a
-                            href="#"
-                            className="block px-5 py-2.5 text-[16px] font-normal transition-colors duration-300 hover:bg-brand hover:text-white hover:opacity-100"
-                          >
+                          <a href="#" className={navDropdownLinkClass}>
                             {child.label}
                             {child.pdf && <PdfMark />}
                           </a>

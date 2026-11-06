@@ -36,9 +36,9 @@ export const siteNews: Record<
   },
   senmon: {
     basePath: "/senmon",
-    heading: "What's new",
+    heading: "What\u2019s new",
     categoryPages: true,
-    badgeWidth: "w-[185px]",
+    badgeWidth: "w-[145px]",
     titleColor: "text-brand",
   },
 };
@@ -56,8 +56,8 @@ export const siteCategories = {
   },
   senmon: {
     news: { label: "NEWS", color: "bg-brand" },
-    specialty: { label: "リウマチ専門職", color: "bg-[#1c85cc]" },
     recruitment: { label: "助成、医学賞等", color: "bg-teal" },
+    specialty: { label: "リウマチ専門職", color: "bg-[#1c85cc]" },
   },
 } satisfies Record<SiteId, Record<string, Category>>;
 
@@ -133,78 +133,80 @@ const dummyTitles = {
   30: "ここには記事のタイトルが入ります。内容は意味のないダミーです",
   34: "ここには記事のタイトルが入ります。長い場合は、折り返して表示します。",
   40: "ここには、記事のタイトルが入ります。長いタイトルの場合は、折り返して表示します。",
+  52: "ここには、記事のタイトルが入ります。長いタイトルの場合は、折り返して表示します。内容はダミーの文章です。",
 } as const;
 
 type TitleLength = keyof typeof dummyTitles;
 
-// メインに載る記事。[タイトルの文字数, カテゴリ, 本文の型, /rheuma/ でのカテゴリ]。
+// メインに載る記事。[タイトルの文字数, カテゴリ, 本文の型, 他のサイトでのカテゴリ]。
 // 本文の型が null の記事は直リンク。新しい順に並べる。
 // 先頭10件のタイトルは、折り返しの行数が元サイトの一覧と同じになる文字数にしてある。
 // 件数は、ページ送りの全状態が出る45件（5ページ）で、直リンクは元サイトと同じ約7割。
+// /senmon/ には、元サイトに合わせて医療関係者情報の全件と、財団情報の約半分を載せる。
 const seedRows: [
   TitleLength,
   keyof typeof siteCategories.main,
   BodyPattern | null,
-  (keyof typeof siteCategories.rheuma)?,
+  Omit<Placements, "main">?,
 ][] = [
-  [28, "foundation", "image", "news"],
-  [18, "foundation", "text", "news"],
-  [13, "foundation", "textLink", "news"],
-  [18, "specialty", null],
-  [15, "foundation", null, "news"],
-  [19, "specialty", null],
-  [40, "general", null, "lecture"],
-  [11, "foundation", "headingLink", "news"],
-  [18, "specialty", null],
-  [40, "general", null, "lecture"],
+  [28, "foundation", "image", { rheuma: "news", senmon: "news" }],
+  [18, "foundation", "text", { rheuma: "news" }],
+  [13, "foundation", "textLink", { rheuma: "news", senmon: "news" }],
+  [18, "specialty", null, { senmon: "specialty" }],
+  [15, "foundation", null, { rheuma: "news" }],
+  [19, "specialty", null, { senmon: "recruitment" }],
+  [40, "general", null, { rheuma: "lecture" }],
+  [11, "foundation", "headingLink", { rheuma: "news" }],
+  [18, "specialty", null, { senmon: "specialty" }],
+  [40, "general", null, { rheuma: "lecture" }],
 
-  [22, "specialty", null],
-  [18, "general", "textLink", "lecture"],
-  [15, "specialty", null],
-  [30, "foundation", null, "news"],
-  [19, "specialty", "headingLink"],
-  [26, "specialty", null],
-  [13, "general", null, "disease"],
-  [34, "specialty", null],
-  [18, "foundation", "listLink", "news"],
-  [22, "specialty", null],
+  [22, "specialty", null, { senmon: "recruitment" }],
+  [18, "general", "textLink", { rheuma: "lecture" }],
+  [15, "specialty", null, { senmon: "news" }],
+  [30, "foundation", null, { rheuma: "news", senmon: "news" }],
+  [19, "specialty", "headingLink", { senmon: "news" }],
+  [26, "specialty", null, { senmon: "specialty" }],
+  [13, "general", null, { rheuma: "disease" }],
+  [34, "specialty", null, { senmon: "recruitment" }],
+  [18, "foundation", "listLink", { rheuma: "news", senmon: "news" }],
+  [22, "specialty", null, { senmon: "recruitment" }],
 
-  [15, "general", null, "lecture"],
-  [26, "specialty", "image"],
-  [18, "specialty", null],
-  [19, "foundation", null, "news"],
-  [30, "specialty", null],
-  [13, "general", "text", "news"],
-  [22, "specialty", null],
-  [18, "specialty", null],
-  [15, "foundation", "textLink", "news"],
-  [34, "specialty", null],
+  [15, "general", null, { rheuma: "lecture" }],
+  [26, "specialty", "image", { senmon: "specialty" }],
+  [18, "specialty", null, { senmon: "specialty" }],
+  [19, "foundation", null, { rheuma: "news" }],
+  [30, "specialty", null, { senmon: "recruitment" }],
+  [13, "general", "text", { rheuma: "news" }],
+  [22, "specialty", null, { senmon: "news" }],
+  [18, "specialty", null, { senmon: "specialty" }],
+  [15, "foundation", "textLink", { rheuma: "news" }],
+  [34, "specialty", null, { senmon: "recruitment" }],
 
-  [26, "general", null, "lecture"],
-  [18, "specialty", "headingLink"],
-  [13, "specialty", null],
-  [22, "foundation", null, "news"],
-  [19, "specialty", null],
-  [15, "general", "listLink", "disease"],
-  [30, "specialty", null],
-  [18, "foundation", null, "news"],
-  [26, "specialty", "image"],
-  [22, "general", null, "lecture"],
+  [26, "general", null, { rheuma: "lecture" }],
+  [18, "specialty", "headingLink", { senmon: "specialty" }],
+  [13, "specialty", null, { senmon: "specialty" }],
+  [22, "foundation", null, { rheuma: "news", senmon: "news" }],
+  [19, "specialty", null, { senmon: "news" }],
+  [15, "general", "listLink", { rheuma: "disease" }],
+  [30, "specialty", null, { senmon: "recruitment" }],
+  [18, "foundation", null, { rheuma: "news", senmon: "news" }],
+  [26, "specialty", "image", { senmon: "specialty" }],
+  [22, "general", null, { rheuma: "lecture" }],
 
-  [18, "specialty", null],
-  [13, "general", "text", "disease"],
-  [34, "specialty", null],
-  [15, "foundation", null, "news"],
-  [19, "general", null, "lecture"],
+  [18, "specialty", null, { senmon: "specialty" }],
+  [13, "general", "text", { rheuma: "disease" }],
+  [34, "specialty", null, { senmon: "specialty" }],
+  [15, "foundation", null, { rheuma: "news" }],
+  [19, "general", null, { rheuma: "lecture" }],
 ];
 
-type RheumaRow = [TitleLength, keyof typeof siteCategories.rheuma, BodyPattern | null];
+type SiteOnlyRow<S extends SiteId> = [TitleLength, keyof (typeof siteCategories)[S], BodyPattern | null];
 
 // /rheuma/ だけに載る記事。[タイトルの文字数, カテゴリ, 本文の型]。
 // 元サイトも /rheuma/ の約半分はメインに載っていないので、合計がメインと同じ45件になるように足す。
 // 先頭の10件は、メインと共通の記事より新しくして、元サイトの一覧と折り返しの行数を揃える。
 // 残りは共通の記事より古くする。
-const rheumaNewerRows: RheumaRow[] = [
+const rheumaNewerRows: SiteOnlyRow<"rheuma">[] = [
   [18, "news", "textLink"],
   [13, "news", "text"],
   [40, "lecture", null],
@@ -217,7 +219,7 @@ const rheumaNewerRows: RheumaRow[] = [
   [40, "lecture", null],
 ];
 
-const rheumaOlderRows: RheumaRow[] = [
+const rheumaOlderRows: SiteOnlyRow<"rheuma">[] = [
   [26, "lecture", null],
   [18, "disease", "text"],
   [34, "news", null],
@@ -230,6 +232,32 @@ const rheumaOlderRows: RheumaRow[] = [
   [22, "lecture", null],
   [18, "news", "text"],
   [34, "lecture", null],
+];
+
+// /senmon/ だけに載る記事。考え方は /rheuma/ と同じで、合計を45件にする。
+// 先頭の10件は、元サイトの一覧と折り返しの行数が同じになる文字数にしてある。
+const senmonNewerRows: SiteOnlyRow<"senmon">[] = [
+  [28, "news", null],
+  [18, "news", "text"],
+  [13, "news", "textLink"],
+  [18, "specialty", null],
+  [15, "news", null],
+  [19, "recruitment", null],
+  [11, "news", "headingLink"],
+  [18, "specialty", null],
+  [11, "news", "listLink"],
+  [52, "recruitment", null],
+];
+
+const senmonOlderRows: SiteOnlyRow<"senmon">[] = [
+  [26, "recruitment", null],
+  [18, "recruitment", null],
+  // 377。元サイトの記事3169と文字数を揃えた比較用
+  [18, "news", "text"],
+  [22, "recruitment", null],
+  [15, "news", null],
+  [30, "recruitment", "textLink"],
+  [19, "specialty", null],
 ];
 
 /** 新しい順に、12月28日から週に1件ずつさかのぼる日付を返す。 */
@@ -248,14 +276,20 @@ function seedArticle(
     : { ...base, kind: "link", linkUrl: DUMMY_URL };
 }
 
-function rheumaOnlyArticles(rows: RheumaRow[], firstId: number, year: number) {
+/** 1つのサイトだけに載る記事を作る。IDは firstId から順に減らす。 */
+function siteOnlyArticles<S extends SiteId>(
+  rows: SiteOnlyRow<S>[],
+  place: (category: SiteOnlyRow<S>[1]) => Placements,
+  firstId: number,
+  year: number,
+) {
   return rows.map(([titleLength, category, pattern], index) =>
     seedArticle(
       {
         id: String(firstId - index),
         title: dummyTitles[titleLength],
         publishedAt: seedDate(index, year),
-        placements: { rheuma: category },
+        placements: place(category),
       },
       pattern,
     ),
@@ -263,17 +297,19 @@ function rheumaOnlyArticles(rows: RheumaRow[], firstId: number, year: number) {
 }
 
 export const seedArticles: Article[] = [
-  ...rheumaOnlyArticles(rheumaNewerRows, 299, 2001),
-  ...seedRows.map(([titleLength, category, pattern, rheumaCategory], index) =>
+  ...siteOnlyArticles(rheumaNewerRows, (rheuma) => ({ rheuma }), 299, 2001),
+  ...siteOnlyArticles(senmonNewerRows, (senmon) => ({ senmon }), 399, 2001),
+  ...seedRows.map(([titleLength, category, pattern, others], index) =>
     seedArticle(
       {
         id: String(seedRows.length - index),
         title: dummyTitles[titleLength],
         publishedAt: seedDate(index),
-        placements: rheumaCategory ? { main: category, rheuma: rheumaCategory } : { main: category },
+        placements: { main: category, ...others },
       },
       pattern,
     ),
   ),
-  ...rheumaOnlyArticles(rheumaOlderRows, 199, 1999),
+  ...siteOnlyArticles(rheumaOlderRows, (rheuma) => ({ rheuma }), 199, 1999),
+  ...siteOnlyArticles(senmonOlderRows, (senmon) => ({ senmon }), 379, 1999),
 ];
