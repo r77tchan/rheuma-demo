@@ -1,5 +1,6 @@
-// 画面に表示するダミーの文言をまとめたファイル。
-// 参考サイトの文言は使わない。文字数だけを合わせて、レイアウトが近くなるようにしている。
+// 画面に表示する文言をまとめたファイル。
+// お知らせの見出しとリンクは元サイトと同じ。ナビやボタンなどの残りはまだダミーで、
+// 文字数だけを合わせてレイアウトが近くなるようにしている。サイト名、ロゴはダミーのままにする。
 
 export type NavChild = { label: string; pdf?: boolean };
 export type NavItem = { label: string; children?: NavChild[] };
@@ -49,35 +50,9 @@ export const greeting = {
   button: "詳細ボタン",
 };
 
-// 後で動的にする場合は、この配列をAPIやCMSからの取得に置き換える。
-export type NewsCategory = "a" | "b";
-export type NewsItem = {
-  date: string;
-  dateTime: string;
-  category: NewsCategory;
-  title: string;
-};
-
-export const newsCategories: Record<NewsCategory, { label: string; color: string }> = {
-  a: { label: "カテゴリA", color: "bg-sky" },
-  b: { label: "カテゴリBのテキスト", color: "bg-teal" },
-};
-
 export const news = {
-  heading: "見出しテキスト",
-  more: "一覧を見る",
-  items: [
-    {
-      date: "2000年01月05日",
-      dateTime: "2000-01-05",
-      category: "a",
-      title: "記事のタイトルが入ります。長い場合は折り返します",
-    },
-    { date: "2000年01月04日", dateTime: "2000-01-04", category: "a", title: "記事のタイトルが入ります" },
-    { date: "2000年01月03日", dateTime: "2000-01-03", category: "a", title: "記事のタイトルが入ります" },
-    { date: "2000年01月02日", dateTime: "2000-01-02", category: "b", title: "記事のタイトルが入ります" },
-    { date: "2000年01月01日", dateTime: "2000-01-01", category: "a", title: "記事のタイトルが入ります" },
-  ] satisfies NewsItem[],
+  heading: "お知らせ",
+  more: "もっとみる",
 };
 
 const links = (count: number, pdfIndexes: number[] = []): NavChild[] =>

@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ja"
       className={`${lato.variable} ${notoSans.variable} ${notoSerif.variable}`}
     >
-      <body className="pc:min-w-[1370px]">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
