@@ -135,4 +135,21 @@
       font-size: 24px;
     }
   }
+
+  /* /rheuma/ の配色と本文の違い。bg-brand や text-brand は、この中ではこの色になる */
+  .theme-rheuma {
+    --color-brand: #3293b1;
+  }
+
+  .theme-rheuma .article-body a {
+    color: inherit;
+  }
+
+  .theme-rheuma .article-body h3 {
+    font-weight: 700;
+  }
+
+  .theme-rheuma .article-body ul li {
+    font-weight: 500;
+  }
 }

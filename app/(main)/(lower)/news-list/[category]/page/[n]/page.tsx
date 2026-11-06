@@ -24,7 +24,7 @@ export default async function NewsCategoryNumberedPage({
   return (
     <>
       <PageTitle site="main" crumbs={[homeCrumb("main"), { label: category.label }]} />
-      <Suspense fallback={<NewsSection />}>
+      <Suspense fallback={<NewsSection site="main" />}>
         {params.then(({ n }) => (
           <NewsArchive site="main" page={Number(n)} category={{ id, label: category.label }} />
         ))}

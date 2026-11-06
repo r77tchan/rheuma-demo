@@ -5,7 +5,7 @@ import { siteNews, type SiteId } from "@/data/news";
 import { useHydrated, useSiteArticles, type SiteArticle } from "@/lib/newsStore";
 import { articleHref, categoryHref, listHref } from "@/lib/newsUrls";
 import { Chevron } from "../parts";
-import { newsHeadingClass, NewsNotFound, NewsSection } from "./NewsSection";
+import { ArticleHeading, NewsNotFound, NewsSection } from "./NewsSection";
 import { homeCrumb, listCrumbs, PageTitle } from "./PageTitle";
 
 type BodyArticle = Extract<SiteArticle, { kind: "body" }>;
@@ -25,7 +25,7 @@ export function ArticleDetail({ site, id }: { site: SiteId; id: string }) {
     return (
       <>
         <PageTitle site={site} crumbs={listCrumbs(site)} />
-        {hydrated ? <NewsNotFound site={site} /> : <NewsSection />}
+        {hydrated ? <NewsNotFound site={site} /> : <NewsSection site={site} />}
       </>
     );
   }
@@ -40,13 +40,15 @@ export function ArticleDetail({ site, id }: { site: SiteId; id: string }) {
         crumbs={[
           homeCrumb(site),
           { label: siteNews[site].heading, href: listHref(site) },
-          { label: article.category.label, href: categoryHref(site, article.category.id) },
+          ...(siteNews[site].categoryPages
+            ? [{ label: article.category.label, href: categoryHref(site, article.category.id) }]
+            : []),
           { label: article.title },
         ]}
       />
-      <NewsSection>
-        <h2 className={newsHeadingClass}>{article.title}</h2>
-        <time dateTime={article.publishedAt} className="mb-4 block">
+      <NewsSection site={site}>
+        <ArticleHeading site={site}>{article.title}</ArticleHeading>
+        <time dateTime={article.publishedAt} className={`block ${site === "rheuma" ? "mb-2.5" : "mb-4"}`}>
           {article.publishedAt}
         </time>
         <div className="article-body" dangerouslySetInnerHTML={{ __html: article.bodyHtml }} />

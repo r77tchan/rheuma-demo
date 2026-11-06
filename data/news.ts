@@ -5,11 +5,42 @@ export type SiteId = "main" | "rheuma" | "senmon";
 
 export type Category = { label: string; color: string };
 
-/** お知らせのページがあるURLの先頭と、ページタイトルの帯の見出し。 */
-export const siteNews: Record<SiteId, { basePath: string; heading: string }> = {
-  main: { basePath: "", heading: "お知らせ" },
-  rheuma: { basePath: "/rheuma", heading: "What's new" },
-  senmon: { basePath: "/senmon", heading: "What's new" },
+/** サイトごとのお知らせの違い（doc/調査_お知らせ.md の「3サイトの違い」）。 */
+export const siteNews: Record<
+  SiteId,
+  {
+    /** お知らせのページがあるURLの先頭。 */
+    basePath: string;
+    /** ページタイトルの帯の見出し。 */
+    heading: string;
+    /** カテゴリ別ページの有無。ないサイトは、バッジのリンク、パンくずのカテゴリ、絞り込みボタンも出さない。 */
+    categoryPages: boolean;
+    badgeWidth: string;
+    /** 一覧のタイトルの色。 */
+    titleColor: string;
+  }
+> = {
+  main: {
+    basePath: "",
+    heading: "お知らせ",
+    categoryPages: true,
+    badgeWidth: "w-[160px]",
+    titleColor: "text-brand",
+  },
+  rheuma: {
+    basePath: "/rheuma",
+    heading: "What\u2019s new",
+    categoryPages: false,
+    badgeWidth: "w-[100px]",
+    titleColor: "text-ink",
+  },
+  senmon: {
+    basePath: "/senmon",
+    heading: "What's new",
+    categoryPages: true,
+    badgeWidth: "w-[185px]",
+    titleColor: "text-brand",
+  },
 };
 
 export const siteCategories = {
@@ -58,7 +89,7 @@ export function formatListDate(publishedAt: string) {
   return `${year}年${month}月${day}日`;
 }
 
-type BodyPattern = "text" | "textLink" | "headingLink" | "listLink" | "image";
+type BodyPattern = "text" | "textLink" | "headingLink" | "listLink" | "image" | "notice";
 
 const DUMMY_URL = "https://example.com/";
 
@@ -68,7 +99,7 @@ const DUMMY_IMAGE =
     '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="#c4c4c4"/></svg>',
   );
 
-// 元サイトの本文に使われている5つの型。"text" の文字数は比較用に元サイトの記事に揃えてある。
+// 元サイトの本文に使われている型。"text" の文字数は比較用に元サイトの記事に揃えてある。
 const bodies: Record<BodyPattern, string> = {
   text:
     "<p>ここには本文の一行目が入ります。ダミーの文章です。<br />" +
@@ -81,6 +112,12 @@ const bodies: Record<BodyPattern, string> = {
   headingLink: `<h3>本文の見出しテキスト</h3><p>ここには本文が入ります。レイアウト確認用のダミーの文章で、内容に意味はありません。</p><p><a href="${DUMMY_URL}">ダミーリンクのテキスト</a></p>`,
   listLink: `<p>ここには本文が入ります。ダミーの文章です。</p><ul><li><a href="${DUMMY_URL}">ダミーリンクのテキスト1</a></li><li><a href="${DUMMY_URL}">ダミーリンクのテキスト2</a></li><li><a href="${DUMMY_URL}">ダミーリンクのテキスト3</a></li></ul>`,
   image: `<p>ここには本文が入ります。レイアウト確認用のダミーの文章で、内容に意味はありません。</p><p><img src="${DUMMY_IMAGE}" alt="ダミー画像" width="600" height="400" /></p>`,
+  // 文字数は比較用に元サイトの /rheuma/ の記事に揃えてある
+  notice:
+    "<p>ここには本文の一行目が入ります。文字数と折り返しを元の文に揃えるためのダミーの文章で、内容に意味はありません。</p>" +
+    "<p><strong>【太字の見出しです】</strong><br />" +
+    "ここに短い文が入ります</p>" +
+    "<p>ここには本文の三行目が入ります。文字数と折り返しを元の文に揃えるためのダミーの文章で、内容に意味はありません。</p>",
 };
 
 // タイトルは文字数で引く。文字数が変わると折り返しが変わり、元サイトと高さがずれる。
@@ -98,76 +135,145 @@ const dummyTitles = {
   40: "ここには、記事のタイトルが入ります。長いタイトルの場合は、折り返して表示します。",
 } as const;
 
-// [タイトルの文字数, カテゴリ, 本文の型]。本文の型が null の記事は直リンク。新しい順に並べる。
+type TitleLength = keyof typeof dummyTitles;
+
+// メインに載る記事。[タイトルの文字数, カテゴリ, 本文の型, /rheuma/ でのカテゴリ]。
+// 本文の型が null の記事は直リンク。新しい順に並べる。
 // 先頭10件のタイトルは、折り返しの行数が元サイトの一覧と同じになる文字数にしてある。
 // 件数は、ページ送りの全状態が出る45件（5ページ）で、直リンクは元サイトと同じ約7割。
-const seedRows: [keyof typeof dummyTitles, keyof typeof siteCategories.main, BodyPattern | null][] = [
-  [28, "foundation", "image"],
-  [18, "foundation", "text"],
-  [13, "foundation", "textLink"],
+const seedRows: [
+  TitleLength,
+  keyof typeof siteCategories.main,
+  BodyPattern | null,
+  (keyof typeof siteCategories.rheuma)?,
+][] = [
+  [28, "foundation", "image", "news"],
+  [18, "foundation", "text", "news"],
+  [13, "foundation", "textLink", "news"],
   [18, "specialty", null],
-  [15, "foundation", null],
+  [15, "foundation", null, "news"],
   [19, "specialty", null],
-  [40, "general", null],
-  [11, "foundation", "headingLink"],
+  [40, "general", null, "lecture"],
+  [11, "foundation", "headingLink", "news"],
   [18, "specialty", null],
-  [40, "general", null],
+  [40, "general", null, "lecture"],
 
   [22, "specialty", null],
-  [18, "general", "textLink"],
+  [18, "general", "textLink", "lecture"],
   [15, "specialty", null],
-  [30, "foundation", null],
+  [30, "foundation", null, "news"],
   [19, "specialty", "headingLink"],
   [26, "specialty", null],
-  [13, "general", null],
+  [13, "general", null, "disease"],
   [34, "specialty", null],
-  [18, "foundation", "listLink"],
+  [18, "foundation", "listLink", "news"],
   [22, "specialty", null],
 
-  [15, "general", null],
+  [15, "general", null, "lecture"],
   [26, "specialty", "image"],
   [18, "specialty", null],
-  [19, "foundation", null],
+  [19, "foundation", null, "news"],
   [30, "specialty", null],
-  [13, "general", "text"],
+  [13, "general", "text", "news"],
   [22, "specialty", null],
   [18, "specialty", null],
-  [15, "foundation", "textLink"],
+  [15, "foundation", "textLink", "news"],
   [34, "specialty", null],
 
-  [26, "general", null],
+  [26, "general", null, "lecture"],
   [18, "specialty", "headingLink"],
   [13, "specialty", null],
-  [22, "foundation", null],
+  [22, "foundation", null, "news"],
   [19, "specialty", null],
-  [15, "general", "listLink"],
+  [15, "general", "listLink", "disease"],
   [30, "specialty", null],
-  [18, "foundation", null],
+  [18, "foundation", null, "news"],
   [26, "specialty", "image"],
-  [22, "general", null],
+  [22, "general", null, "lecture"],
 
   [18, "specialty", null],
-  [13, "general", "text"],
+  [13, "general", "text", "disease"],
   [34, "specialty", null],
-  [15, "foundation", null],
-  [19, "general", null],
+  [15, "foundation", null, "news"],
+  [19, "general", null, "lecture"],
+];
+
+type RheumaRow = [TitleLength, keyof typeof siteCategories.rheuma, BodyPattern | null];
+
+// /rheuma/ だけに載る記事。[タイトルの文字数, カテゴリ, 本文の型]。
+// 元サイトも /rheuma/ の約半分はメインに載っていないので、合計がメインと同じ45件になるように足す。
+// 先頭の10件は、メインと共通の記事より新しくして、元サイトの一覧と折り返しの行数を揃える。
+// 残りは共通の記事より古くする。
+const rheumaNewerRows: RheumaRow[] = [
+  [18, "news", "textLink"],
+  [13, "news", "text"],
+  [40, "lecture", null],
+  [11, "news", "notice"],
+  [40, "lecture", null],
+  [11, "news", "headingLink"],
+  [40, "lecture", null],
+  [13, "news", "listLink"],
+  [11, "news", "image"],
+  [40, "lecture", null],
+];
+
+const rheumaOlderRows: RheumaRow[] = [
+  [26, "lecture", null],
+  [18, "disease", "text"],
+  [34, "news", null],
+  [22, "lecture", null],
+  [15, "disease", "textLink"],
+  [30, "lecture", null],
+  [19, "news", "headingLink"],
+  [26, "lecture", null],
+  [13, "disease", "listLink"],
+  [22, "lecture", null],
+  [18, "news", "text"],
+  [34, "lecture", null],
 ];
 
 /** 新しい順に、12月28日から週に1件ずつさかのぼる日付を返す。 */
-function seedDate(index: number) {
+function seedDate(index: number, year = 2000) {
   const month = 12 - Math.floor(index / 4);
   const day = 28 - (index % 4) * 7;
-  return `2000-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-export const seedArticles: Article[] = seedRows.map(([titleLength, category, pattern], index) => {
-  const base = {
-    id: String(seedRows.length - index),
-    title: dummyTitles[titleLength],
-    publishedAt: seedDate(index),
-    placements: { main: category },
-  };
+function seedArticle(
+  base: Pick<Article, "id" | "title" | "publishedAt" | "placements">,
+  pattern: BodyPattern | null,
+): Article {
   return pattern
     ? { ...base, kind: "body", bodyHtml: bodies[pattern] }
     : { ...base, kind: "link", linkUrl: DUMMY_URL };
-});
+}
+
+function rheumaOnlyArticles(rows: RheumaRow[], firstId: number, year: number) {
+  return rows.map(([titleLength, category, pattern], index) =>
+    seedArticle(
+      {
+        id: String(firstId - index),
+        title: dummyTitles[titleLength],
+        publishedAt: seedDate(index, year),
+        placements: { rheuma: category },
+      },
+      pattern,
+    ),
+  );
+}
+
+export const seedArticles: Article[] = [
+  ...rheumaOnlyArticles(rheumaNewerRows, 299, 2001),
+  ...seedRows.map(([titleLength, category, pattern, rheumaCategory], index) =>
+    seedArticle(
+      {
+        id: String(seedRows.length - index),
+        title: dummyTitles[titleLength],
+        publishedAt: seedDate(index),
+        placements: rheumaCategory ? { main: category, rheuma: rheumaCategory } : { main: category },
+      },
+      pattern,
+    ),
+  ),
+  ...rheumaOnlyArticles(rheumaOlderRows, 199, 1999),
+];

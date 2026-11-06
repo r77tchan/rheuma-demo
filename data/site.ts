@@ -2,7 +2,7 @@
 // リンクやボタン、見出しの文言は元サイトと同じ。ロゴ、組織名、著作権表記、人名、説明の文章はダミーで、
 // 文字数だけを合わせてレイアウトが近くなるようにしている（doc/メモ.md の決定事項）。
 
-export type NavChild = { label: string; pdf?: boolean };
+export type NavChild = { label: string; pdf?: boolean; children?: { label: string }[] };
 export type NavItem = { label: string; children?: NavChild[] };
 /** href がない項目は、まだ行き先のページがない。 */
 export type LinkItem = { label: string; href?: string };
@@ -47,7 +47,7 @@ export const fullMenu = {
 
 export const sideMenu: LinkItem[] = [
   { label: "財団トップ", href: "/" },
-  { label: "患者・一般" },
+  { label: "患者・一般", href: "/rheuma/" },
   { label: "医療関係者" },
   { label: "寄付のお願い" },
 ];

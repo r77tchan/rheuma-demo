@@ -15,7 +15,7 @@ export default function NewsNumberedPage({ params }: PageProps<"/news/page/[n]">
   return (
     <>
       <PageTitle site="main" crumbs={listCrumbs("main")} />
-      <Suspense fallback={<NewsSection />}>
+      <Suspense fallback={<NewsSection site="main" />}>
         {params.then(({ n }) => (
           <NewsArchive site="main" page={Number(n)} />
         ))}

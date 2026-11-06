@@ -1,38 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useLayoutEffect, useState } from "react";
+import { useFullMenu } from "@/lib/useFullMenu";
 import { useScrolledPast } from "@/lib/useScrolledPast";
 import { globalNav } from "@/data/site";
 import { FullMenu } from "./FullMenu";
+import { MenuButton } from "./MenuButton";
 import { IconPlaceholder, LogoPlaceholder, PdfMark } from "./parts";
 
 /** トップではロゴを400pxスクロールするまで隠す。下層ページでは最初から表示する。 */
 export function Header({ home }: { home: boolean }) {
-  // トップと下層でこの部品が同時にDOMに残るので、IDが重ならないようにする
-  const menuId = useId();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { menuId, menuOpen, setMenuOpen } = useFullMenu();
   const pastHeader = useScrolledPast(90);
   const scrolledPastHero = useScrolledPast(400);
   const showLogo = !home || scrolledPastHero;
-
-  // 別のレイアウトのページへ移ると、この部品は隠れるだけで状態が残るので、隠れるときに閉じる
-  useLayoutEffect(() => () => setMenuOpen(false), []);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    // 同じレイアウト内で戻る、進むを押したときは、この部品が隠れないのでここで閉じる
-    const close = () => setMenuOpen(false);
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("popstate", close);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("popstate", close);
-    };
-  }, [menuOpen]);
 
   return (
     <header
@@ -94,34 +75,13 @@ export function Header({ home }: { home: boolean }) {
         onNavigate={() => setMenuOpen(false)}
       />
 
-      <button
-        type="button"
-        aria-label={menuOpen ? "メニューを閉じる" : "メニューを開く"}
-        aria-expanded={menuOpen}
-        aria-controls={menuId}
+      <MenuButton
+        menuId={menuId}
+        open={menuOpen}
+        pastHeader={pastHeader}
+        colorClass="bg-brand"
         onClick={() => setMenuOpen((open) => !open)}
-        className={`fixed right-0 z-[1000] flex size-[70px] cursor-pointer items-center justify-center rounded-bl-[20px] bg-brand transition-[top] duration-500 tb:size-[100px] pc:top-0 ${
-          pastHeader ? "top-0" : "top-[60px]"
-        }`}
-      >
-        <span className="relative block h-[18px] w-5 pc:h-[25px] pc:w-7">
-          <span
-            className={`absolute left-0 block h-0.5 w-full bg-white transition-all duration-300 ${
-              menuOpen ? "top-2 rotate-45" : "top-0"
-            }`}
-          />
-          <span
-            className={`absolute inset-y-0 m-auto block h-0.5 bg-white transition-all duration-300 ${
-              menuOpen ? "left-1/2 w-0" : "left-0 w-full"
-            }`}
-          />
-          <span
-            className={`absolute left-0 block h-0.5 w-full bg-white transition-all duration-300 ${
-              menuOpen ? "top-2 -rotate-45" : "top-[calc(100%-2px)]"
-            }`}
-          />
-        </span>
-      </button>
+      />
     </header>
   );
 }

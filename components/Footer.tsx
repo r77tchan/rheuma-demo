@@ -2,13 +2,21 @@ import Link from "next/link";
 import { footer } from "@/data/site";
 import { IconPlaceholder, LogoPlaceholder } from "./parts";
 
-/** 下層ページのフッターには、上に線が付く。 */
-export function Footer({ home }: { home: boolean }) {
+/** 上の線と内側の最大幅は、サイトやページによって違う。 */
+export function Footer({
+  logoHref = "/",
+  lineClass,
+  maxWidthClass = "max-w-[1440px]",
+}: {
+  logoHref?: string;
+  lineClass?: string;
+  maxWidthClass?: string;
+}) {
   return (
-    <footer className={home ? undefined : "border-t border-[#b3b3b3]"}>
+    <footer className={lineClass}>
       <div className="px-5 pt-10 pb-5 tb:py-[60px] pc:px-[100px]">
-        <div className="mx-auto max-w-[1440px] tb:flex tb:justify-between">
-          <Link href="/" className="mx-auto block w-[215px] tb:mx-0">
+        <div className={`mx-auto tb:flex tb:justify-between ${maxWidthClass}`}>
+          <Link href={logoHref} className="mx-auto block w-[215px] tb:mx-0">
             <LogoPlaceholder className="h-[50px] w-[215px]" />
           </Link>
           <ul className="link-fade my-5 flex items-center justify-center tb:my-0">

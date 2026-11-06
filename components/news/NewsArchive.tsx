@@ -1,6 +1,6 @@
 "use client";
 
-import type { SiteId } from "@/data/news";
+import { siteNews, type SiteId } from "@/data/news";
 import { useHydrated, useSiteArticles } from "@/lib/newsStore";
 import { categoryHref, listHref, NEWS_PER_PAGE, pageCount } from "@/lib/newsUrls";
 import { CategoryFilter } from "./CategoryFilter";
@@ -25,14 +25,20 @@ export function NewsArchive({
     ? siteArticles.filter((article) => article.category.id === category.id)
     : siteArticles;
   const total = pageCount(articles.length);
+  const { categoryPages } = siteNews[site];
 
   if (!Number.isInteger(page) || page < 1 || page > total) {
-    return hydrated ? <NewsNotFound site={site} /> : <NewsSection />;
+    return hydrated ? <NewsNotFound site={site} /> : <NewsSection site={site} />;
   }
 
   return (
-    <NewsSection className="flex flex-col tb:block">
-      {category ? <h2 className={newsHeadingClass}>{category.label}</h2> : <CategoryFilter site={site} />}
+    // 絞り込みボタンをスマホ幅でページ送りの下へ移すために flex にする。ボタンのないサイトは余白の重なり方が変わるので使わない
+    <NewsSection site={site} className={categoryPages ? "flex flex-col tb:block" : ""}>
+      {category ? (
+        <h2 className={newsHeadingClass}>{category.label}</h2>
+      ) : (
+        categoryPages && <CategoryFilter site={site} />
+      )}
       <div>
         <NewsList
           site={site}
