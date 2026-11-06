@@ -1,43 +1,68 @@
 // 画面に表示する文言をまとめたファイル。
-// お知らせの見出しとリンクは元サイトと同じ。ナビやボタンなどの残りはまだダミーで、
-// 文字数だけを合わせてレイアウトが近くなるようにしている。サイト名、ロゴはダミーのままにする。
+// リンクやボタン、見出しの文言は元サイトと同じ。ロゴ、組織名、著作権表記、人名、説明の文章はダミーで、
+// 文字数だけを合わせてレイアウトが近くなるようにしている（doc/メモ.md の決定事項）。
 
 export type NavChild = { label: string; pdf?: boolean };
 export type NavItem = { label: string; children?: NavChild[] };
+/** href がない項目は、まだ行き先のページがない。 */
+export type LinkItem = { label: string; href?: string };
 
-const subItems = (count: number, pdfIndexes: number[] = []): NavChild[] =>
-  Array.from({ length: count }, (_, i) => ({
-    label: `サブメニュー項目${i + 1}`,
-    pdf: pdfIndexes.includes(i),
-  }));
+const navChildren = (labels: string[], pdfIndexes: number[] = []): NavChild[] =>
+  labels.map((label, i) => ({ label, pdf: pdfIndexes.includes(i) }));
 
 export const globalNav: NavItem[] = [
-  { label: "グローバルナビ項目A", children: subItems(8, [3, 4, 5]) },
-  { label: "ナビ項目" },
-  { label: "ナビゲーション", children: subItems(6) },
-  { label: "メニュー項目", children: subItems(2) },
+  {
+    label: "リウマチ財団について",
+    children: navChildren(
+      ["理事長挨拶", "財団概要", "沿革", "役員・顧問名簿", "評議員名簿", "評議員選定委員会", "委員会", "情報公開"],
+      [3, 4, 5],
+    ),
+  },
+  { label: "主な活動" },
+  {
+    label: "事業内容・実績",
+    children: navChildren([
+      "調査・研究事業",
+      "普及啓発事業",
+      "教育研修事業",
+      "リウマチ専門職制度事業",
+      "発行物",
+      "災害時リウマチ患者支援事業",
+    ]),
+  },
+  { label: "寄付のお願い", children: navChildren(["ご寄付のお願い", "賛助会ご加入のお願い"]) },
 ];
 
 export const fullMenu = {
-  first: "メニュー先頭の項目",
-  extras: ["追加メニュー項目1", "追加メニュー項目2", "追加メニュー項目3"],
-  others: ["補助項目1", "補助項目2", "補助メニュー項目3", "補助項目4"],
+  first: { label: "トップページ", href: "/" } satisfies LinkItem,
+  extras: ["リウマチ月間講演会", "患者さん・一般の方", "医療関係者の皆さま"],
+  others: [
+    { label: "Whats's new", href: "/news/" },
+    { label: "リンク" },
+    { label: "プライバシーポリシー" },
+    { label: "お問い合わせ" },
+  ] satisfies LinkItem[],
   searchPlaceholder: "検索キーワード",
 };
 
-export const sideMenu = ["サイド項目1", "サイド項目2", "サイド項目3", "サイド項目4"];
+export const sideMenu: LinkItem[] = [
+  { label: "財団トップ", href: "/" },
+  { label: "患者・一般" },
+  { label: "医療関係者" },
+  { label: "寄付のお願い" },
+];
 
 export const guides = [
   {
-    title: "ガイド見出しA",
+    title: "リウマチを知ろう!",
     lines: ["ここに説明テキストが", "入ります。ダミーの文章です"],
-    button: "ボタンのテキストA",
+    button: "患者さん・一般向け情報",
     color: "bg-pink",
   },
   {
-    title: "ガイド見出しテキストB",
+    title: "医療関係者のみなさんへ",
     lines: ["ここには説明のテキストが入ります。", "ダミーの文章です"],
-    button: "ボタンのテキストB",
+    button: "医療関係者向け情報",
     color: "bg-teal",
   },
 ];
@@ -47,44 +72,41 @@ export const greeting = {
     "ここには代表者からのメッセージが入ります。レイアウト確認用の文章で、内容に意味はありません。",
   organization: "組織名のテキスト",
   name: "役職名　氏名テキスト",
-  button: "詳細ボタン",
+  button: "理事長挨拶",
 };
 
 export const news = {
-  heading: "お知らせ",
   more: "もっとみる",
 };
 
-const links = (count: number, pdfIndexes: number[] = []): NavChild[] =>
-  Array.from({ length: count }, (_, i) => ({
-    label: `リンクテキスト${i + 1}`,
-    pdf: pdfIndexes.includes(i),
-  }));
-
 export const contentCards = [
   {
-    title: "カード見出しA",
-    english: "English Title A",
+    title: "寄付のお願い",
+    english: "Donation Requests",
     overlay: "bg-[rgba(0,170,170,0.7)]",
-    links: links(2),
+    links: navChildren(["ご寄付のお願い", "賛助会ご加入のお願い"]),
   },
   {
-    title: "カード見出しB",
-    english: "English Title Text B",
+    title: "リウマチ財団とは",
+    english: "Rheumatoid Foundation",
     overlay: "bg-[rgba(0,87,173,0.7)]",
-    links: links(7, [2, 3, 4]),
+    links: navChildren(
+      ["財団概要", "沿革", "役員・顧問名簿", "評議員名簿", "評議員選定委員会", "委員会", "情報公開"],
+      [2, 3, 4],
+    ),
   },
   {
-    title: "カード見出しC",
-    english: "English Title C",
+    title: "主な活動と事業",
+    english: "Main Activities",
     overlay: "bg-[rgba(29,134,204,0.7)]",
-    links: links(5),
+    links: navChildren(["主な活動", "調査・研究事業", "普及啓発事業", "教育研修事業", "リウマチ専門職制度事業"]),
   },
 ];
 
 export type SlideBlock =
-  | { type: "heading"; text: string }
-  | { type: "text"; text: string }
+  | { type: "heading"; text: string; bold?: boolean }
+  | { type: "text"; text: string; gapBefore?: boolean }
+  | { type: "blankLine" }
   | { type: "image"; ratio: string }
   | { type: "links"; items: string[] };
 
@@ -93,10 +115,10 @@ export type Slide = { blocks: SlideBlock[]; button?: string };
 export const slides: Slide[] = [
   {
     blocks: [
-      { type: "heading", text: "スライドの見出しテキストA" },
+      { type: "heading", text: "財団ニュース新刊のご案内", bold: true },
       { type: "image", ratio: "191 / 166" },
     ],
-    button: "ボタンのテキスト",
+    button: "財団ニュースを読む",
   },
   {
     blocks: [
@@ -104,14 +126,15 @@ export const slides: Slide[] = [
       {
         type: "text",
         text: "スライドの本文が入ります。レイアウト確認用のダミーテキストで、内容に意味はありません。",
+        gapBefore: true,
       },
     ],
-    button: "ボタンのテキスト",
+    button: "詳しいご案内",
   },
   {
     blocks: [
       { type: "image", ratio: "191 / 153" },
-      { type: "links", items: ["リンク文字列A", "リンク文字列B", "リンク文字列C"] },
+      { type: "links", items: ["災害への備え", "私のお薬は", "医療機関をさがす"] },
     ],
   },
   {
@@ -119,9 +142,10 @@ export const slides: Slide[] = [
       { type: "heading", text: "スライドの見出しテキストB" },
       {
         type: "text",
-        text: "スライドの本文が入ります。レイアウト確認用のダミーテキストで、内容に意味はありません。行数を合わせるための文章です。",
+        text: "スライドの本文が入ります。レイアウト確認用のダミーテキストで、内容に意味はありません。行数を合わせるためのダミーの文章です。",
       },
       { type: "image", ratio: "191 / 105" },
+      { type: "blankLine" },
     ],
     button: "ボタンのテキスト",
   },
@@ -130,6 +154,6 @@ export const slides: Slide[] = [
 export const bannerCount = 6;
 
 export const footer = {
-  links: ["フッター項目", "フッターのリンク項目", "フッター項目"],
+  links: ["リンク", "プライバシーポリシー", "お問い合わせ"],
   copyright: "© Sample Copyright Text.",
 };

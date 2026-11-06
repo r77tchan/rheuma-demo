@@ -1,4 +1,26 @@
-import type { CSSProperties } from "react";
+import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
+
+/** サイト内のリンク。行き先のページがまだない項目は # にする。 */
+export function SiteLink({
+  href,
+  className,
+  children,
+}: {
+  href?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return href ? (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <a href="#" className={className}>
+      {children}
+    </a>
+  );
+}
 
 /** グレーのダミー画像。 */
 export function Placeholder({

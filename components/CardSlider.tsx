@@ -9,19 +9,19 @@ const AUTOPLAY_MS = 5000;
 function Block({ block }: { block: SlideBlock }) {
   switch (block.type) {
     case "heading":
-      return <p>{block.text}</p>;
+      return <p className={block.bold ? "font-bold" : undefined}>{block.text}</p>;
     case "text":
-      return <p className="text-[0.83em] font-bold">{block.text}</p>;
+      return <p className={`text-[0.83em] font-bold ${block.gapBefore ? "mt-[1lh]" : ""}`}>{block.text}</p>;
+    case "blankLine":
+      return <p>&nbsp;</p>;
     case "image":
       return <Placeholder className="w-full" style={{ aspectRatio: block.ratio }} />;
     case "links":
       return (
         <ul>
           {block.items.map((item) => (
-            <li key={item}>
-              <span aria-hidden className="mr-1.5 text-[0.7em]">
-                ▶
-              </span>
+            <li key={item} className="text-ink">
+              <span aria-hidden>☞ </span>
               <a href="#" className="underline">
                 {item}
               </a>

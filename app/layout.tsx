@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lato, Noto_Sans_JP, Noto_Serif_JP } from "next/font/google";
+import { Lato, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
 const lato = Lato({
@@ -13,21 +13,17 @@ const notoSans = Noto_Sans_JP({
   variable: "--font-noto-sans",
 });
 
-const notoSerif = Noto_Serif_JP({
-  subsets: ["latin"],
-  variable: "--font-noto-serif",
-});
-
 export const metadata: Metadata = {
   title: "レイアウトモック",
   description: "レイアウト確認用のモックです。",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ja"
-      className={`${lato.variable} ${notoSans.variable} ${notoSerif.variable}`}
+      className={`${lato.variable} ${notoSans.variable}`}
     >
       <body>{children}</body>
     </html>

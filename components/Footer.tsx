@@ -1,14 +1,16 @@
+import Link from "next/link";
 import { footer } from "@/data/site";
 import { IconPlaceholder, LogoPlaceholder } from "./parts";
 
-export function Footer() {
+/** 下層ページのフッターには、上に線が付く。 */
+export function Footer({ home }: { home: boolean }) {
   return (
-    <footer>
+    <footer className={home ? undefined : "border-t border-[#b3b3b3]"}>
       <div className="px-5 pt-10 pb-5 tb:py-[60px] pc:px-[100px]">
         <div className="mx-auto max-w-[1440px] tb:flex tb:justify-between">
-          <a href="#" className="mx-auto block w-[215px] tb:mx-0">
+          <Link href="/" className="mx-auto block w-[215px] tb:mx-0">
             <LogoPlaceholder className="h-[50px] w-[215px]" />
-          </a>
+          </Link>
           <ul className="link-fade my-5 flex items-center justify-center tb:my-0">
             {footer.links.map((label, index) => (
               <li key={`${label}-${index}`}>
@@ -28,9 +30,9 @@ export function Footer() {
           <a
             href="#"
             aria-label="SNSのダミーリンク"
-            className="mx-auto block w-10 tb:hidden"
+            className="mx-auto block w-[46px] tb:hidden"
           >
-            <IconPlaceholder className="size-10 rounded-full" />
+            <IconPlaceholder className="size-[46px] rounded-full" />
           </a>
         </div>
       </div>

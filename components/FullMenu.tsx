@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { fullMenu, globalNav, type NavItem } from "@/data/site";
-import { PdfMark } from "./parts";
+import { PdfMark, SiteLink } from "./parts";
 
 /** 子メニューを持つ項目。スマホではタップで開閉し、タブレット以上では常に開いている。 */
 function ParentItem({ item }: { item: NavItem }) {
@@ -62,10 +62,13 @@ export function FullMenu({
   id,
   open,
   pastHeader,
+  onNavigate,
 }: {
   id: string;
   open: boolean;
   pastHeader: boolean;
+  /** メニュー内のリンクが押されたときに呼ぶ。同じレイアウト内の移動でも閉じるため。 */
+  onNavigate: () => void;
 }) {
   return (
     <div
@@ -74,10 +77,16 @@ export function FullMenu({
         pastHeader ? "top-[70px] h-[calc(100dvh-70px)]" : "top-[60px] h-[calc(100dvh-60px)]"
       } ${open ? "visible opacity-100" : "invisible opacity-0"}`}
     >
-      <nav aria-label="全体メニュー" className="mx-auto max-w-[1370px]">
+      <nav
+        aria-label="全体メニュー"
+        className="mx-auto max-w-[1370px]"
+        onClick={(event) => {
+          if ((event.target as Element).closest("a")) onNavigate();
+        }}
+      >
         <ul>
           <li className={plainItem}>
-            <a href="#">{fullMenu.first}</a>
+            <SiteLink href={fullMenu.first.href}>{fullMenu.first.label}</SiteLink>
           </li>
         </ul>
 
@@ -104,12 +113,12 @@ export function FullMenu({
 
         <div className="tb:flex tb:flex-wrap tb:justify-between">
           <ul className="tb:flex">
-            {fullMenu.others.map((label) => (
+            {fullMenu.others.map((item) => (
               <li
-                key={label}
+                key={item.label}
                 className="mb-5 text-[16px] tb:mb-[30px] tb:pr-2.5 tb:not-first:ml-[85px]"
               >
-                <a href="#">{label}</a>
+                <SiteLink href={item.href}>{item.label}</SiteLink>
               </li>
             ))}
           </ul>

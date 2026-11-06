@@ -1,25 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useId, useLayoutEffect, useState } from "react";
 import { useScrolledPast } from "@/lib/useScrolledPast";
 import { globalNav } from "@/data/site";
 import { FullMenu } from "./FullMenu";
 import { IconPlaceholder, LogoPlaceholder, PdfMark } from "./parts";
 
-const MENU_ID = "full-menu";
-
-export function Header() {
+/** トップではロゴを400pxスクロールするまで隠す。下層ページでは最初から表示する。 */
+export function Header({ home }: { home: boolean }) {
+  // トップと下層でこの部品が同時にDOMに残るので、IDが重ならないようにする
+  const menuId = useId();
   const [menuOpen, setMenuOpen] = useState(false);
   const pastHeader = useScrolledPast(90);
-  const showLogo = useScrolledPast(400);
+  const scrolledPastHero = useScrolledPast(400);
+  const showLogo = !home || scrolledPastHero;
+
+  // 別のレイアウトのページへ移ると、この部品は隠れるだけで状態が残るので、隠れるときに閉じる
+  useLayoutEffect(() => () => setMenuOpen(false), []);
 
   useEffect(() => {
     if (!menuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMenuOpen(false);
     };
+    // 同じレイアウト内で戻る、進むを押したときは、この部品が隠れないのでここで閉じる
+    const close = () => setMenuOpen(false);
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("popstate", close);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("popstate", close);
+    };
   }, [menuOpen]);
 
   return (
@@ -29,14 +41,14 @@ export function Header() {
       }`}
     >
       <div className="flex items-center justify-between">
-        <a
-          href="#"
+        <Link
+          href="/"
           className={`block transition-[opacity,visibility] duration-500 ${
             showLogo ? "visible opacity-100" : "invisible opacity-0"
           }`}
         >
           <LogoPlaceholder className="h-[50px] w-[215px]" />
-        </a>
+        </Link>
 
         <nav aria-label="グローバルナビ" className="mr-[100px] hidden text-[18px] font-medium pc:block">
           <ul className="link-fade flex h-10 items-center">
@@ -75,13 +87,18 @@ export function Header() {
         </nav>
       </div>
 
-      <FullMenu id={MENU_ID} open={menuOpen} pastHeader={pastHeader} />
+      <FullMenu
+        id={menuId}
+        open={menuOpen}
+        pastHeader={pastHeader}
+        onNavigate={() => setMenuOpen(false)}
+      />
 
       <button
         type="button"
         aria-label={menuOpen ? "メニューを閉じる" : "メニューを開く"}
         aria-expanded={menuOpen}
-        aria-controls={MENU_ID}
+        aria-controls={menuId}
         onClick={() => setMenuOpen((open) => !open)}
         className={`fixed right-0 z-[1000] flex size-[70px] cursor-pointer items-center justify-center rounded-bl-[20px] bg-brand transition-[top] duration-500 tb:size-[100px] pc:top-0 ${
           pastHeader ? "top-0" : "top-[60px]"

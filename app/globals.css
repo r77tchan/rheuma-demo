@@ -2,7 +2,8 @@
 
 @theme inline {
   --font-sans: var(--font-lato), var(--font-noto-sans), "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
-  --font-serif: var(--font-noto-serif), "Yu Mincho", YuMincho, serif;
+  /* 明朝は元サイトと同じ指定にする。Webフォントは読み込まず、端末にある書体を使う */
+  --font-serif: "Source Han Serif JP", "Noto Serif CJK JP", "游明朝体", "Yu Mincho", YuMincho, serif;
 }
 
 @theme {
@@ -44,6 +45,94 @@
     .link-fade button:hover {
       opacity: 0.7;
       transition: opacity 0.3s;
+    }
+  }
+
+  /* 記事の本文。エディタが出力するHTMLにはクラスを付けられないので、ここにまとめる */
+  .article-body p {
+    margin-bottom: 1em;
+    line-height: 2;
+  }
+
+  .article-body p + p {
+    margin-top: 1em;
+  }
+
+  .article-body a {
+    color: var(--color-brand);
+    text-decoration: underline;
+  }
+
+  .article-body a:hover {
+    text-decoration: none;
+  }
+
+  .article-body strong {
+    font-weight: 700;
+  }
+
+  .article-body img {
+    display: inline;
+    vertical-align: middle;
+  }
+
+  .article-body h3 {
+    position: relative;
+    margin: 2em 0 1em;
+    padding-left: 20px;
+    color: var(--color-brand);
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .article-body h3::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 4px;
+    height: 25px;
+    background-color: var(--color-brand);
+  }
+
+  .article-body ul {
+    margin-bottom: 1em;
+  }
+
+  .article-body ul li {
+    position: relative;
+    margin-bottom: 1em;
+    padding-left: 30px;
+    line-height: 2;
+  }
+
+  .article-body ul li::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--color-brand);
+  }
+
+  .article-body ul li::after {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: 6px;
+    width: 6px;
+    height: 6px;
+    border-top: 1px solid #ffffff;
+    border-right: 1px solid #ffffff;
+    transform: rotate(45deg);
+  }
+
+  @media (min-width: 48rem) {
+    .article-body h3 {
+      margin-top: 3em;
+      font-size: 24px;
     }
   }
 }

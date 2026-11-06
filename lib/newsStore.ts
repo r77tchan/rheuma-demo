@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import {
+  getCategory,
   seedArticles,
-  siteCategories,
   type Article,
   type Category,
   type SiteId,
@@ -81,22 +81,34 @@ export function useArticles() {
   return useSyncExternalStore(subscribe, getArticles, getSeedArticles);
 }
 
-export type SiteArticle = Article & { category: Category };
+export type SiteArticle = Article & { category: Category & { id: string } };
 
 /** そのサイトに載っている公開済みの記事を、新しい順に返す。 */
 export function useSiteArticles(site: SiteId): SiteArticle[] {
   const articles = useArticles();
   const today = useSyncExternalStore(subscribeToNothing, getToday, getNoDate);
-  const categories: Record<string, Category> = siteCategories[site];
 
   return articles
     .flatMap((article) => {
       const categoryId = article.placements[site];
-      const category = categoryId && categories[categoryId];
+      const category = categoryId && getCategory(site, categoryId);
       if (!category || (today && article.publishedAt > today)) return [];
-      return [{ ...article, category }];
+      return [{ ...article, category: { ...category, id: categoryId } }];
     })
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+}
+
+function getTrue() {
+  return true;
+}
+
+function getFalse() {
+  return false;
+}
+
+/** ブラウザのデータを読める状態になったかを返す。読む前に「記事がない」と判定しないために使う。 */
+export function useHydrated() {
+  return useSyncExternalStore(subscribeToNothing, getTrue, getFalse);
 }
 
 function write(articles: Article[]) {
