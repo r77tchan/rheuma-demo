@@ -223,6 +223,11 @@ function subscribeToNothing() {
   return () => {};
 }
 
+/** 今日の日付（YYYY-MM-DD）。サーバーでの描画とハイドレーションのあいだは null。 */
+export function useToday() {
+  return useSyncExternalStore(subscribeToNothing, getToday, getNoDate);
+}
+
 /** 新しい順に並べる。公開日が同じなら、IDの大きい（後から作った）ほうが先。 */
 export function compareNewest(a: Article, b: Article) {
   return b.publishedAt.localeCompare(a.publishedAt) || Number(b.id) - Number(a.id);
@@ -248,7 +253,7 @@ export type SiteArticle = Article & { category: Category & { id: string } };
 /** そのサイトに載っている公開済みの記事を、新しい順に返す。プレビューの下書きは、予約でも表示する。 */
 export function useSiteArticles(site: SiteId): SiteArticle[] {
   const articles = useArticles();
-  const today = useSyncExternalStore(subscribeToNothing, getToday, getNoDate);
+  const today = useToday();
 
   return articles
     .flatMap((article) => {
@@ -316,10 +321,22 @@ export function getNextArticleId() {
   return String(readStored().nextId);
 }
 
+function getFirstId() {
+  return String(FIRST_ID);
+}
+
+/** 次に追加する記事のID（getNextArticleId）を、描画の中で使うためのフック。 */
+export function useNextArticleId() {
+  return useSyncExternalStore(subscribe, getNextArticleId, getFirstId);
+}
+
 type WithoutId<T> = T extends unknown ? Omit<T, "id"> : never;
 
+/** 追加するときに渡す記事（IDはストアが付ける）。 */
+export type ArticleInput = WithoutId<Article>;
+
 /** 記事を追加する。成功したら付けたIDを返す。 */
-export function addArticle(input: WithoutId<Article>): SaveResult {
+export function addArticle(input: ArticleInput): SaveResult {
   const stored = readStored();
   const id = String(stored.nextId);
   const article = parseArticle({ ...input, id });

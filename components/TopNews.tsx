@@ -15,7 +15,10 @@ export function TopNews() {
   const articles = useSiteArticles("main").slice(0, TOP_COUNT);
 
   return (
-    <div className="mt-10 w-full rounded-[10px] border-[3px] border-news-line px-5 pt-5 pb-[30px] tb:px-[30px] pc:mt-0 pc:w-[53%]">
+    <div
+      data-preview-anchor="news"
+      className="mt-10 w-full rounded-[10px] border-[3px] border-news-line px-5 pt-5 pb-[30px] tb:px-[30px] pc:mt-0 pc:w-[53%]"
+    >
       <h2 className="mb-[.5em] border-b border-[#ccc] pb-5 text-center font-serif text-[30px] leading-[1.8] font-medium tracking-[.1em] tb:border-b-0 tb:pb-0 tb:leading-[1.4] pc:text-left">
         {siteNews.main.heading}
       </h2>

@@ -16,7 +16,7 @@ export function SenmonTopNews() {
   const articles = useSiteArticles("senmon").slice(0, TOP_COUNT);
 
   return (
-    <div className="w-full pc:w-[60%]">
+    <div data-preview-anchor="news" className="w-full pc:w-[60%]">
       <h2 className="mb-[26px] border-b border-[#ccc] pb-[13px] text-center font-serif text-[26px] leading-[1.8] font-medium tracking-[.1em] tb:mb-[30px] tb:border-b-0 tb:pb-0 tb:text-[30px] tb:leading-[1.4] pc:text-left">
         {siteNews.senmon.heading}
       </h2>

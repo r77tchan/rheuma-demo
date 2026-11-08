@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lato, Noto_Sans_JP } from "next/font/google";
 import { DummyLinkToast } from "@/components/DummyLinkToast";
+import { PreviewReceiver } from "@/components/PreviewReceiver";
 import "./globals.css";
 
 const lato = Lato({
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         {children}
         <DummyLinkToast />
+        <PreviewReceiver />
       </body>
     </html>
   );

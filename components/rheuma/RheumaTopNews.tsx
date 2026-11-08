@@ -14,7 +14,7 @@ export function RheumaTopNews() {
   const articles = useSiteArticles("rheuma").slice(0, TOP_COUNT);
 
   return (
-    <div className="link-fade mt-[30px] w-full pc:mt-[35px] pc:ml-[30px] pc:w-[80%]">
+    <div data-preview-anchor="news" className="link-fade mt-[30px] w-full pc:mt-[35px] pc:ml-[30px] pc:w-[80%]">
       <h2 className="mb-[1em] text-center text-[30px] leading-[1.4] font-medium tb:text-[35px] pc:mb-[.7em] pc:text-left">
         {rheumaNews.heading}
       </h2>
