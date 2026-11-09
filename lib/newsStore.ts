@@ -225,7 +225,7 @@ function subscribeToNothing() {
   return () => {};
 }
 
-/** 今日の日付（YYYY-MM-DD）。サーバーでの描画とハイドレーションのあいだは null。 */
+/** 今日の日付（YYYY-MM-DD）。投稿画面で、公開日の初期値に使う。サーバーでの描画とハイドレーションのあいだは null。 */
 export function useToday() {
   return useSyncExternalStore(subscribeToNothing, getToday, getNoDate);
 }
@@ -235,7 +235,7 @@ export function compareNewest(a: Article, b: Article) {
   return b.publishedAt.localeCompare(a.publishedAt) || Number(b.id) - Number(a.id);
 }
 
-/** すべての記事を返す。投稿画面用で、公開前の記事も含む。並びは決まっていない（並べるときは toSorted を使う）。 */
+/** すべての記事を返す。並びは決まっていない（並べるときは toSorted を使う）。 */
 export function useArticles() {
   return useSyncExternalStore(subscribe, getArticles, getSeedArticles);
 }
@@ -252,17 +252,15 @@ export function isSeedId(id: string) {
 
 export type SiteArticle = Article & { category: Category & { id: string } };
 
-/** そのサイトに載っている公開済みの記事を、新しい順に返す。プレビューの下書きは、予約でも表示する。 */
+/** そのサイトに載っている記事を、新しい順に返す。予約投稿は作らないので、未来の日付の記事もそのまま出す。 */
 export function useSiteArticles(site: SiteId): SiteArticle[] {
   const articles = useArticles();
-  const today = useToday();
 
   return articles
     .flatMap((article) => {
       const categoryId = article.placements[site];
       const category = categoryId && getCategory(site, categoryId);
       if (!category) return [];
-      if (today && article.publishedAt > today && article !== previewDraft) return [];
       return [{ ...article, category: { ...category, id: categoryId } }];
     })
     .sort(compareNewest);

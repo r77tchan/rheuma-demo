@@ -34,15 +34,17 @@ export function useFlash() {
   return useSyncExternalStore(subscribe, getFlash, getNoFlash);
 }
 
-// 読み込み直したあとに出すお知らせ（初期状態に戻したあとは、隠れて残った画面を消すために読み込み直す）
+// 読み込み直したあとに出すお知らせ（初期状態に戻したあとは、隠れて残った画面を消すために一覧を読み込み直す）
 const RELOAD_FLASH_KEY = "rheuma-demo:admin-flash";
 
-/** お知らせを残して、ページを読み込み直す。お知らせは文言だけを渡す。 */
-export function reloadWithFlash(message: string) {
+/** お知らせを残して、記事一覧を読み込み直す（どの画面から呼んでも一覧へ移る）。お知らせは文言だけを渡す。 */
+export function reloadListWithFlash(message: string) {
   try {
     window.sessionStorage.setItem(RELOAD_FLASH_KEY, message);
   } catch {}
-  window.location.reload();
+  // 画面の移動（router.push）ではなく、文書ごと読み込み直す。隠れて残った画面と、覚えている blob URL を消すため
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+  window.location.assign("/admin/");
 }
 
 /** 読み込み直す前に残したお知らせを出す。useEffect の中で呼ぶ。 */

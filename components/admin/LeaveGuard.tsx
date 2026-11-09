@@ -12,7 +12,7 @@ import {
   useState,
   type ComponentProps,
 } from "react";
-import { buttonClass } from "./ui";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 // 入力の途中で投稿画面の中のリンクを押したときに、画面の中で確認を出す（node_modules/next/dist/docs の link.md「Blocking navigation」）。
 // タブを閉じるときと再読み込みのときは、ブラウザの確認を出す。ブラウザの戻るボタンでは確認しない。
@@ -71,40 +71,23 @@ export function LeaveGuardProvider({ children }: { children: React.ReactNode }) 
 }
 
 function LeaveDialog({ onLeave, onStay }: { onLeave: () => void; onStay: () => void }) {
-  const stayRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    stayRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onStay();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onStay]);
-
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/40 px-4">
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="leave-dialog-title"
-        className="w-full max-w-[440px] rounded-lg bg-white p-6 shadow-xl"
-      >
-        <h2 id="leave-dialog-title" className="text-[18px] font-bold">
-          入力した内容が保存されていません
-        </h2>
-        <p className="mt-3">このページを離れると、入力した内容は消えます。</p>
-        <div className="mt-6 flex flex-wrap justify-end gap-3">
-          <button type="button" ref={stayRef} onClick={onStay} className={buttonClass.secondary}>
-            このページに残る
-          </button>
-          <button type="button" onClick={onLeave} className={buttonClass.danger}>
-            離れる
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmDialog
+      title="入力した内容が保存されていません"
+      message={<p>このページを離れると、入力した内容は消えます。</p>}
+      cancelLabel="このページに残る"
+      confirmLabel="離れる"
+      onConfirm={onLeave}
+      onCancel={onStay}
+    />
   );
+}
+
+// 初期状態に戻したあとは、入力の途中でもブラウザの確認を出さずに移る（戻すときに、入力が消えることは確認済み）
+let leaveWithoutConfirm = false;
+
+export function allowLeaveWithoutConfirm() {
+  leaveWithoutConfirm = true;
 }
 
 /**
@@ -125,6 +108,7 @@ export function useLeaveGuard(active: boolean, discard: () => void) {
     context.register(guard);
 
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (leaveWithoutConfirm) return;
       event.preventDefault();
       // 古いブラウザは returnValue が必要
       event.returnValue = true;

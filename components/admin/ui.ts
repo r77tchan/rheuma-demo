@@ -51,6 +51,14 @@ export const buttonClass = {
     "inline-flex items-center justify-center rounded-md border border-[#e0a3a3] bg-white px-4 py-2 text-[#c62828] hover:bg-[#fdf2f2]",
 };
 
+/**
+ * 選択中のタブや絞り込みの見た目。押すと何かが起きるボタン（青の塗りつぶし）と見分けられるよう、薄い青にする。
+ * エディタのツールバーや掲載先の枠の、選択中の見た目と同じ系統。
+ */
+export function toggleClass(active: boolean) {
+  return active ? "border-brand bg-[#e8eef6] text-brand" : "border-[#c3cad3] bg-white hover:bg-[#f0f3f7]";
+}
+
 export const fieldClass =
   "w-full rounded-md border border-[#c3cad3] bg-white px-3 py-2 focus:border-brand focus:outline-2 focus:outline-brand/25";
 

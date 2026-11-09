@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { siteNews, type Article, type SiteId } from "@/data/news";
 import { isPreviewMessage, PREVIEW_FRAME_NAME, type PreviewMessage } from "@/lib/preview";
-import { formatJapaneseDate, siteShortLabels, siteTopHref } from "./ui";
+import { siteShortLabels, siteTopHref, toggleClass } from "./ui";
 
 // プレビュー。実際のページを iframe で開き、下書きを postMessage で渡す（lib/preview.ts）。
 // iframe の中のメディアクエリは iframe の幅で決まるので、PC幅は1440pxで開いて枠に合わせて縮める。
@@ -12,10 +12,9 @@ const DEVICE_WIDTHS = { pc: 1440, sp: 390 } as const;
 type Device = keyof typeof DEVICE_WIDTHS;
 type View = "detail" | "top";
 
-const tabClass = (active: boolean) =>
-  `rounded-md px-3 py-1.5 text-[14px] ${active ? "bg-brand text-white" : "bg-white hover:bg-[#f0f3f7]"}`;
+const tabClass = (active: boolean) => `rounded-md border px-3 py-1 text-[14px] ${toggleClass(active)}`;
 
-export function PreviewPane({ draft, sites, today }: { draft: Article; sites: SiteId[]; today: string }) {
+export function PreviewPane({ draft, sites }: { draft: Article; sites: SiteId[] }) {
   const [site, setSite] = useState<SiteId>("main");
   const [view, setView] = useState<View>("detail");
   const [device, setDevice] = useState<Device>(() =>
@@ -61,14 +60,6 @@ export function PreviewPane({ draft, sites, today }: { draft: Article; sites: Si
         </div>
       )}
 
-      <p className="mt-2 text-[13px] text-[#555]">
-        {draft.publishedAt > today && (
-          <strong className="mr-2 font-bold text-[#8a5a00]">
-            予約: {formatJapaneseDate(draft.publishedAt)}から公開されます（プレビューでは表示しています）。
-          </strong>
-        )}
-        プレビューの中のリンクは、押しても移動しません。
-      </p>
 
       {activeSite ? (
         <PreviewFrame

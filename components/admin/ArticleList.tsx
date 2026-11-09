@@ -2,19 +2,19 @@
 
 import { useEffect, useLayoutEffect, useState } from "react";
 import { getCategory, type Article, type SiteId } from "@/data/news";
-import { reloadWithFlash, restoreReloadFlash, setFlash, useFlash } from "@/lib/adminFlash";
+import { restoreReloadFlash, setFlash, useFlash } from "@/lib/adminFlash";
 import {
   compareNewest,
   deleteArticle,
   isSeedId,
-  resetDemoData,
   useArticles,
   useEditedIds,
   useHydrated,
-  useToday,
 } from "@/lib/newsStore";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { ExternalLinkIcon } from "./ExternalLinkIcon";
 import { AdminLink } from "./LeaveGuard";
-import { buttonClass, formatJapaneseDate, SITE_IDS, siteShortLabels, textLinkClass } from "./ui";
+import { buttonClass, formatJapaneseDate, SITE_IDS, siteShortLabels, textLinkClass, toggleClass } from "./ui";
 
 type Filter = "all" | SiteId;
 
@@ -28,7 +28,6 @@ export function ArticleList() {
   const hydrated = useHydrated();
   const articles = useArticles();
   const editedIds = useEditedIds();
-  const today = useToday();
   const [filter, setFilter] = useState<Filter>("all");
 
   useEffect(() => restoreReloadFlash(), []);
@@ -46,10 +45,9 @@ export function ArticleList() {
 
       <div className="flex flex-wrap items-center gap-4">
         <h1 className="text-[22px] font-bold">記事一覧</h1>
-        <AdminLink href="/admin/new/" className={buttonClass.primary}>
+        <AdminLink href="/admin/new/" className={`${buttonClass.primary} ml-auto`}>
           新規作成
         </AdminLink>
-        <ResetButton />
       </div>
 
       <div role="group" aria-label="サイトで絞り込む" className="mt-5 flex flex-wrap gap-2">
@@ -59,9 +57,7 @@ export function ArticleList() {
             type="button"
             aria-pressed={filter === id}
             onClick={() => setFilter(id)}
-            className={`rounded-full border px-4 py-1.5 text-[14px] ${
-              filter === id ? "border-brand bg-brand text-white" : "border-[#c3cad3] bg-white hover:bg-[#f0f3f7]"
-            }`}
+            className={`rounded-full border px-4 py-1.5 text-[14px] ${toggleClass(filter === id)}`}
           >
             {label}（{countFor(id)}）
           </button>
@@ -73,7 +69,6 @@ export function ArticleList() {
           <ArticleRow
             key={article.id}
             article={article}
-            scheduled={today !== null && article.publishedAt > today}
             status={editedIds.has(article.id) ? (isSeedId(article.id) ? "編集済み" : "追加") : null}
           />
         ))}
@@ -96,6 +91,7 @@ function FlashPanel() {
             {flash.links.map((link) => (
               <a key={link.href} href={link.href} target="_blank" rel="noopener" className={textLinkClass}>
                 {link.label}
+                <ExternalLinkIcon />
               </a>
             ))}
           </p>
@@ -113,61 +109,15 @@ function FlashPanel() {
   );
 }
 
-function ResetButton() {
-  const [confirming, setConfirming] = useState(false);
-  const [resetting, setResetting] = useState(false);
-
-  // 開いた確認は、ページが隠れたら閉じる（Activity で開いたまま残さない）
-  useLayoutEffect(() => () => setConfirming(false), []);
-
-  const reset = async () => {
-    setResetting(true);
-    const ok = await resetDemoData();
-    if (ok) {
-      // 隠れて残った編集画面（開いたときの記事のまま）と、覚えている画像のURLを消すため、読み込み直す
-      reloadWithFlash("初期状態に戻しました。");
-      return;
-    }
-    setResetting(false);
-    setConfirming(false);
-    setFlash({
-      message: "初期状態に戻せませんでした。ブラウザの保存が許可されていない可能性があります。",
-      links: [],
-    });
-  };
-
-  if (!confirming) {
-    return (
-      <button type="button" onClick={() => setConfirming(true)} className={`${buttonClass.secondary} ml-auto`}>
-        初期状態に戻す
-      </button>
-    );
-  }
-
-  return (
-    <div className="flex w-full flex-wrap items-center gap-3 rounded-md bg-[#fdf2f2] px-4 py-3 tb:ml-auto tb:w-auto">
-      <p className="text-[14px]">追加、編集、削除した内容がすべて消えます。</p>
-      <button type="button" onClick={reset} disabled={resetting} className={buttonClass.danger}>
-        {resetting ? "戻しています…" : "初期状態に戻す"}
-      </button>
-      <button type="button" onClick={() => setConfirming(false)} className={buttonClass.secondary}>
-        やめる
-      </button>
-    </div>
-  );
-}
-
 function ArticleRow({
   article,
-  scheduled,
   status,
 }: {
   article: Article;
-  scheduled: boolean;
   status: "編集済み" | "追加" | null;
 }) {
   const [confirming, setConfirming] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const editHref = `/admin/${article.id}/`;
 
   useLayoutEffect(() => () => setConfirming(false), []);
@@ -175,9 +125,10 @@ function ArticleRow({
   const remove = () => {
     const result = deleteArticle(article.id);
     if (!result.ok && result.reason === "storage") {
-      setError(true);
+      setError("削除できませんでした。ブラウザの保存が許可されていない可能性があります。");
       return;
     }
+    setConfirming(false);
     setFlash({ message: `「${article.title}」を削除しました。`, links: [] });
   };
 
@@ -185,9 +136,6 @@ function ArticleRow({
     <li className="px-4 py-3 tb:flex tb:items-start tb:gap-4">
       <div className="shrink-0 text-[14px] text-[#555] tb:w-[150px]">
         {formatJapaneseDate(article.publishedAt)}
-        {scheduled && (
-          <span className="ml-2 rounded bg-[#fff1d6] px-1.5 py-0.5 text-[12px] text-[#8a5a00]">予約</span>
-        )}
       </div>
 
       <div className="mt-1 min-w-0 flex-1 tb:mt-0">
@@ -211,31 +159,33 @@ function ArticleRow({
             );
           })}
         </div>
-        {error && <p className="mt-2 text-[14px] text-[#c62828]">削除できませんでした。ブラウザの保存が許可されていない可能性があります。</p>}
       </div>
 
       <div className="mt-2 flex shrink-0 flex-wrap items-center gap-2 tb:mt-0">
-        {confirming ? (
-          <>
-            <span className="text-[14px]">削除しますか？</span>
-            <button type="button" onClick={remove} className={buttonClass.danger}>
-              削除する
-            </button>
-            <button type="button" onClick={() => setConfirming(false)} className={buttonClass.secondary}>
-              やめる
-            </button>
-          </>
-        ) : (
-          <>
-            <AdminLink href={editHref} className={buttonClass.secondary}>
-              編集
-            </AdminLink>
-            <button type="button" onClick={() => setConfirming(true)} className={buttonClass.dangerOutline}>
-              削除
-            </button>
-          </>
-        )}
+        <AdminLink href={editHref} className={buttonClass.secondary}>
+          編集
+        </AdminLink>
+        <button
+          type="button"
+          onClick={() => {
+            setError(null);
+            setConfirming(true);
+          }}
+          className={buttonClass.dangerOutline}
+        >
+          削除
+        </button>
       </div>
+      {confirming && (
+        <ConfirmDialog
+          title="記事を削除しますか？"
+          message={<p>「{article.title || "（タイトルなし）"}」を削除します。</p>}
+          confirmLabel="削除する"
+          error={error}
+          onConfirm={remove}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </li>
   );
 }

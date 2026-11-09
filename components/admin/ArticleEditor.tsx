@@ -17,12 +17,12 @@ import {
   type ArticleInput,
   type SaveResult,
 } from "@/lib/newsStore";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { AdminLink, useLeaveGuard } from "./LeaveGuard";
 import { PreviewPane } from "./PreviewPane";
 import {
   buttonClass,
   fieldClass,
-  formatJapaneseDate,
   isEnter,
   SITE_IDS,
   siteArticleHref,
@@ -36,15 +36,11 @@ const BodyEditor = dynamic(() => import("./BodyEditor").then((module) => module.
   loading: () => <p className="rounded-md border border-[#c3cad3] bg-white px-4 py-3 text-[#666]">読み込んでいます…</p>,
 });
 
-type MainCategory = keyof typeof siteCategories.main;
-type SubSite = Exclude<SiteId, "main">;
-const SUB_SITES: SubSite[] = ["rheuma", "senmon"];
-
-/** メインのカテゴリを選ぶと、そのサイトにも載せる設定にする（元サイトの掲載先の傾向。doc/調査_お知らせ.md）。 */
-const defaultSubSite: Partial<Record<MainCategory, SubSite>> = {
-  general: "rheuma",
-  specialty: "senmon",
-};
+/**
+ * 載せないことを表す値。どのサイトも、選択肢の先頭に「載せない」を置き、いつもどれか1つが選ばれている形にする。
+ * 掲載先は自動では決めない（選んでいない欄が変わると分かりにくいため）。載せるサイトの枠は色を変え、載せ忘れに気づけるようにする。
+ */
+const NOT_PLACED = "none";
 
 type FormState = {
   kind: Article["kind"];
@@ -52,12 +48,11 @@ type FormState = {
   linkUrl: string;
   bodyHtml: string;
   publishedAt: string;
-  /** 空は未選択、none は「メインには載せない」。 */
-  main: MainCategory | "none" | "";
-  sub: Record<SubSite, { on: boolean; category: string }>;
+  /** サイトごとのカテゴリ。NOT_PLACED は載せない。 */
+  sites: Record<SiteId, string>;
 };
 
-type FieldName = "title" | "linkUrl" | "bodyHtml" | "publishedAt" | "main" | "rheuma" | "senmon" | "sites";
+type FieldName = "title" | "linkUrl" | "bodyHtml" | "publishedAt" | "sites";
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -69,8 +64,7 @@ function createForm(article: Article | undefined, today: string): FormState {
       linkUrl: "",
       bodyHtml: "",
       publishedAt: today,
-      main: "",
-      sub: { rheuma: { on: false, category: "" }, senmon: { on: false, category: "" } },
+      sites: { main: NOT_PLACED, rheuma: NOT_PLACED, senmon: NOT_PLACED },
     };
   }
   const { placements } = article;
@@ -80,10 +74,10 @@ function createForm(article: Article | undefined, today: string): FormState {
     linkUrl: article.kind === "link" ? article.linkUrl : "",
     bodyHtml: article.kind === "body" ? article.bodyHtml : "",
     publishedAt: article.publishedAt,
-    main: placements.main ?? "none",
-    sub: {
-      rheuma: { on: Boolean(placements.rheuma), category: placements.rheuma ?? "" },
-      senmon: { on: Boolean(placements.senmon), category: placements.senmon ?? "" },
+    sites: {
+      main: placements.main ?? NOT_PLACED,
+      rheuma: placements.rheuma ?? NOT_PLACED,
+      senmon: placements.senmon ?? NOT_PLACED,
     },
   };
 }
@@ -110,11 +104,7 @@ function validate(form: FormState) {
     errors.bodyHtml = "本文を入力してください。";
   }
   if (!DATE_PATTERN.test(form.publishedAt)) errors.publishedAt = "公開日を入力してください。";
-  if (!form.main) errors.main = "メインサイトのカテゴリを選んでください。";
-  for (const site of SUB_SITES) {
-    if (form.sub[site].on && !form.sub[site].category) errors[site] = "カテゴリを選んでください。";
-  }
-  if (form.main === "none" && !SUB_SITES.some((site) => form.sub[site].on)) {
+  if (!SITE_IDS.some((site) => form.sites[site] !== NOT_PLACED)) {
     errors.sites = "載せるサイトを1つ以上選んでください。";
   }
   return errors;
@@ -122,9 +112,8 @@ function validate(form: FormState) {
 
 function toPlacements(form: FormState): Placements {
   const placements: Partial<Record<SiteId, string>> = {};
-  if (form.main && form.main !== "none") placements.main = form.main;
-  for (const site of SUB_SITES) {
-    if (form.sub[site].on && form.sub[site].category) placements[site] = form.sub[site].category;
+  for (const site of SITE_IDS) {
+    if (form.sites[site] !== NOT_PLACED) placements[site] = form.sites[site];
   }
   // カテゴリの値は、画面に出した選択肢（siteCategories）からしか入らない
   return placements as Placements;
@@ -243,10 +232,10 @@ function ArticleForm({
   const fieldId = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [form, setForm] = useState(initial);
-  const [touchedSites, setTouchedSites] = useState<Record<SubSite, boolean>>({ rheuma: false, senmon: false });
   const [showErrors, setShowErrors] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   // 本文の画像やPDFを取り込んでいる途中か
   const [uploading, setUploading] = useState(false);
 
@@ -265,45 +254,16 @@ function ArticleForm({
 
   const errors = validate(form);
   const shownErrors = showErrors ? errors : {};
-  const scheduled = DATE_PATTERN.test(form.publishedAt) && form.publishedAt > today;
-  const placedSites = SITE_IDS.filter((site) => toPlacements(form)[site]);
-  // 掲載先を選んでいる途中でもプレビューできるよう、カテゴリ未選択のサイトも含める
-  const previewSites = SITE_IDS.filter((site) =>
-    site === "main" ? form.main !== "" && form.main !== "none" : form.sub[site].on,
-  );
-  const previewArticle = toPreviewArticle(
-    {
-      ...form,
-      // カテゴリ未選択のサイトは、プレビューでは仮に NEWS で出す
-      sub: {
-        rheuma: { ...form.sub.rheuma, category: form.sub.rheuma.category || "news" },
-        senmon: { ...form.sub.senmon, category: form.sub.senmon.category || "news" },
-      },
-    },
-    id ?? nextId,
-    today,
-  );
+  const placedSites = SITE_IDS.filter((site) => form.sites[site] !== NOT_PLACED);
+  const previewArticle = toPreviewArticle(form, id ?? nextId, today);
 
   const update = (patch: Partial<FormState>) => {
     setForm((current) => ({ ...current, ...patch }));
     setSaveError(null);
   };
 
-  const updateSub = (site: SubSite, patch: Partial<FormState["sub"][SubSite]>) => {
-    setForm((current) => ({ ...current, sub: { ...current.sub, [site]: { ...current.sub[site], ...patch } } }));
-    setSaveError(null);
-  };
-
-  const selectMain = (main: FormState["main"]) => {
-    setForm((current) => {
-      if (!isNew) return { ...current, main };
-      // 新規作成のときだけ、触っていないサイトに掲載先の初期値を入れる
-      const sub = { ...current.sub };
-      for (const site of SUB_SITES) {
-        if (!touchedSites[site]) sub[site] = { ...sub[site], on: main !== "" && main !== "none" && defaultSubSite[main] === site };
-      }
-      return { ...current, main, sub };
-    });
+  const selectSite = (site: SiteId, value: string) => {
+    setForm((current) => ({ ...current, sites: { ...current.sites, [site]: value } }));
     setSaveError(null);
   };
 
@@ -333,13 +293,8 @@ function ArticleForm({
       setSaveError(saveErrorMessages[result.reason]);
       return;
     }
-    const title = `「${input.title}」`;
-    if (scheduled) {
-      finish(`${title}を予約しました。${formatJapaneseDate(input.publishedAt)}から各サイトに出ます。`, []);
-      return;
-    }
     finish(
-      `${title}を${isNew ? "公開" : "更新"}しました。`,
+      `「${input.title}」を${isNew ? "公開" : "更新"}しました。`,
       placedSites.map((site) => ({
         label: `${siteShortLabels[site]}で見る`,
         href: siteArticleHref(site, { id: result.id, kind: input.kind }),
@@ -351,8 +306,7 @@ function ArticleForm({
     if (!id) return;
     const result = deleteArticle(id);
     if (!result.ok && result.reason === "storage") {
-      setSaveError(saveErrorMessages.storage);
-      setConfirmingDelete(false);
+      setDeleteError(saveErrorMessages.storage);
       return;
     }
     finish(`「${initial.title}」を削除しました。`, []);
@@ -377,7 +331,10 @@ function ArticleForm({
         noValidate
         className="rounded-lg border border-[#dde2e8] bg-white p-5 tb:p-6"
       >
-        <div className="flex flex-wrap items-baseline gap-x-4">
+        <AdminLink href="/admin/" className="text-[14px] text-brand hover:underline">
+          ← 記事一覧に戻る
+        </AdminLink>
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-4">
           <h1 className="text-[22px] font-bold">{isNew ? "新規作成" : "記事の編集"}</h1>
           {!isNew && <span className="text-[13px] text-[#666]">ID: {id}</span>}
         </div>
@@ -464,66 +421,39 @@ function ArticleForm({
           </div>
         )}
 
-        {/* 掲載先 */}
+        {/* 掲載先。どのサイトも「載せない」とカテゴリから1つを選ぶ */}
         <fieldset className="mt-8">
           <legend className="font-bold">載せるサイトとカテゴリ</legend>
-          <p className="mt-1 text-[13px] text-[#555]">
-            メインのカテゴリで「一般・患者さん情報」を選ぶと一般向けサイトに、「医療関係者情報」を選ぶと医療関係者向けサイトにも載せる設定になります。
-          </p>
 
-          <div className="mt-3 rounded-md border border-[#dde2e8] p-4">
-            <p className="font-bold">{siteLabels.main}</p>
-            <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
-              {[
-                ...Object.entries(siteCategories.main).map(([value, category]) => [value, category.label] as const),
-                ["none", "メインには載せない"] as const,
-              ].map(([value, label]) => (
-                <label key={value} className="flex cursor-pointer items-center gap-1.5">
-                  <input
-                    type="radio"
-                    name={`${fieldId}-main`}
-                    checked={form.main === value}
-                    onChange={() => selectMain(value as FormState["main"])}
-                    className="accent-brand"
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
-            {error("main")}
-          </div>
-
-          {SUB_SITES.map((site) => (
-            <div key={site} className="mt-3 rounded-md border border-[#dde2e8] p-4">
-              <label className="flex cursor-pointer items-center gap-2 font-bold">
-                <input
-                  type="checkbox"
-                  checked={form.sub[site].on}
-                  onChange={(event) => {
-                    setTouchedSites((current) => ({ ...current, [site]: true }));
-                    updateSub(site, { on: event.target.checked });
-                  }}
-                  className="size-4 accent-brand"
-                />
-                {siteLabels[site]}に載せる
-              </label>
-              {form.sub[site].on && (
-                <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 pl-6">
-                  {Object.entries(siteCategories[site]).map(([value, category]) => (
-                    <label key={value} className="flex cursor-pointer items-center gap-1.5">
-                      <input
-                        type="radio"
-                        name={`${fieldId}-${site}`}
-                        checked={form.sub[site].category === value}
-                        onChange={() => updateSub(site, { category: value })}
-                        className="accent-brand"
-                      />
-                      {category.label}
-                    </label>
-                  ))}
-                </div>
-              )}
-              {error(site)}
+          {SITE_IDS.map((site) => (
+            <div
+              key={site}
+              role="radiogroup"
+              aria-labelledby={`${fieldId}-${site}`}
+              className={`mt-3 rounded-md border p-4 ${
+                form.sites[site] === NOT_PLACED ? "border-[#dde2e8]" : "border-brand bg-[#f2f6fb]"
+              }`}
+            >
+              <p id={`${fieldId}-${site}`} className="font-bold">
+                {siteLabels[site]}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+                {[
+                  [NOT_PLACED, "載せない"] as const,
+                  ...Object.entries(siteCategories[site]).map(([value, category]) => [value, category.label] as const),
+                ].map(([value, label]) => (
+                  <label key={value} className="flex cursor-pointer items-center gap-1.5">
+                    <input
+                      type="radio"
+                      name={`${fieldId}-${site}-category`}
+                      checked={form.sites[site] === value}
+                      onChange={() => selectSite(site, value)}
+                      className="accent-brand"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
             </div>
           ))}
           {error("sites")}
@@ -534,7 +464,7 @@ function ArticleForm({
           <label htmlFor={`${fieldId}-date`} className="font-bold">
             公開日
           </label>
-          <div className="mt-2 flex flex-wrap items-center gap-3">
+          <div className="mt-2">
             <input
               id={`${fieldId}-date`}
               type="date"
@@ -542,11 +472,7 @@ function ArticleForm({
               onChange={(event) => update({ publishedAt: event.target.value })}
               className={`${fieldClass} w-auto`}
             />
-            {scheduled && (
-              <span className="rounded bg-[#fff1d6] px-2 py-0.5 text-[13px] text-[#8a5a00]">予約</span>
-            )}
           </div>
-          <p className="mt-1 text-[13px] text-[#555]">未来の日付にすると予約になり、その日から各サイトに出ます。</p>
           {error("publishedAt")}
         </div>
 
@@ -558,36 +484,35 @@ function ArticleForm({
         )}
         <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-[#e3e7ec] pt-6">
           <button type="submit" className={buttonClass.primary}>
-            {scheduled ? (isNew ? "予約する" : "更新する（予約）") : isNew ? "公開する" : "更新する"}
+            {isNew ? "公開する" : "更新する"}
           </button>
-          <AdminLink href="/admin/" className={buttonClass.secondary}>
-            記事一覧に戻る
-          </AdminLink>
-          {!isNew &&
-            (confirmingDelete ? (
-              <span className="flex flex-wrap items-center gap-2 tb:ml-auto">
-                <span className="text-[14px]">この記事を削除しますか？</span>
-                <button type="button" onClick={remove} className={buttonClass.danger}>
-                  削除する
-                </button>
-                <button type="button" onClick={() => setConfirmingDelete(false)} className={buttonClass.secondary}>
-                  やめる
-                </button>
-              </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmingDelete(true)}
-                className={`${buttonClass.dangerOutline} tb:ml-auto`}
-              >
-                削除
-              </button>
-            ))}
+          {!isNew && (
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError(null);
+                setConfirmingDelete(true);
+              }}
+              className={`${buttonClass.dangerOutline} ml-auto`}
+            >
+              削除
+            </button>
+          )}
         </div>
+        {confirmingDelete && (
+          <ConfirmDialog
+            title="記事を削除しますか？"
+            message={<p>「{initial.title || "（タイトルなし）"}」を削除します。</p>}
+            confirmLabel="削除する"
+            error={deleteError}
+            onConfirm={remove}
+            onCancel={() => setConfirmingDelete(false)}
+          />
+        )}
       </form>
 
       <div className="mt-6 pc:sticky pc:top-4 pc:mt-0">
-        <PreviewPane draft={previewArticle} sites={previewSites} today={today} />
+        <PreviewPane draft={previewArticle} sites={placedSites} />
       </div>
     </div>
   );

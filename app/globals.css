@@ -155,6 +155,11 @@
     }
   }
 
+  /* 投稿画面では、押せるボタンを指のカーソルにする（Tailwind CSS 4 は、ボタンのカーソルを矢印のままにする） */
+  .admin-ui button:not(:disabled) {
+    cursor: pointer;
+  }
+
   /* 投稿画面の本文のエディタ（components/admin/BodyEditor.tsx）。中の見た目は .article-body（メインの本文）と同じ */
   .body-editor .ProseMirror {
     min-height: 260px;
