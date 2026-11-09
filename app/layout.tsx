@@ -18,7 +18,7 @@ const notoSans = Noto_Sans_JP({
 export const metadata: Metadata = {
   // サブサイトと投稿画面は、それぞれのレイアウトで置き換える
   title: "メインサイト（デモ）",
-  description: "レイアウト確認用のモックです。",
+  description: "お知らせを1回入力すると、3つのサイトに載る仕組みのデモです。",
   robots: { index: false, follow: false },
 };
 
