@@ -32,7 +32,7 @@ http://localhost:3000/rheuma-demo/ で開きます。
 
 `main` にプッシュすると、GitHub Actions がビルドして GitHub Pages に公開します（`.github/workflows/deploy.yml`）。
 
-静的なファイルとして書き出すので、投稿画面で追加する記事のページ（ID 1000〜1099）や、増えたページ送りも、ビルドのときに先に作っています（`lib/staticPages.ts`）。
+静的なファイルとして書き出すので、記事のIDとページ番号はURLのクエリに持たせています（`/news/detail/?id=45`、`/news/?page=2`）。投稿画面で追加した記事も、同じページの中でブラウザが組み立てます。
 
 ## 開発について
 

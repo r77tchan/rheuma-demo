@@ -1,6 +1,6 @@
 import { siteNews, type Article, type SiteId } from "@/data/news";
 import { withBasePath } from "@/lib/basePath";
-import { listHref } from "@/lib/newsUrls";
+import { articlePageHref, listHref } from "@/lib/newsUrls";
 
 // 投稿画面の文言と見た目。元サイトにない画面なので、サイト名は役割で呼ぶ（正式名はダミーのため使わない）。
 
@@ -29,7 +29,7 @@ export function siteTopUrl(site: SiteId) {
 
 /** 記事のページのURL。 */
 export function articlePageUrl(site: SiteId, id: string) {
-  return withBasePath(`${siteNews[site].basePath}/news/${id}/`);
+  return withBasePath(articlePageHref(site, id));
 }
 
 /** 記事がそのサイトで見られる場所。本文のある記事は記事のページ、リンクだけの記事はお知らせ一覧。 */

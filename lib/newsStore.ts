@@ -9,7 +9,6 @@ import {
 } from "@/data/news";
 import { extractFileIds } from "./bodyHtml";
 import { clearFiles, deleteUnusedFiles } from "./fileStore";
-import { FIRST_NEW_ID, LAST_NEW_ID } from "./staticPages";
 
 // 記事の読み書きはすべてここを通す。保存先はブラウザの localStorage（本文の画像とPDFは IndexedDB。lib/fileStore.ts）。
 // 保存するのは初期記事との差分（追加、編集した記事と、削除した初期記事のID）だけにして、
@@ -20,7 +19,8 @@ import { FIRST_NEW_ID, LAST_NEW_ID } from "./staticPages";
 const STORAGE_KEY = "rheuma-demo:news:v1";
 const OLD_KEYS = ["rheuma-demo:articles"];
 
-/** 保存データの検査に使う、IDの最大値。投稿画面で追加する記事のIDの範囲は lib/staticPages.ts。 */
+/** 投稿画面で追加した記事のIDは、ここから順に付ける。初期状態に戻すと、また1000から付ける。 */
+const FIRST_ID = 1000;
 const MAX_ID = 999_999_999;
 
 type StoredNews = {
@@ -32,7 +32,7 @@ type StoredNews = {
   nextId: number;
 };
 
-const EMPTY: StoredNews = { articles: [], deletedIds: [], nextId: FIRST_NEW_ID };
+const EMPTY: StoredNews = { articles: [], deletedIds: [], nextId: FIRST_ID };
 
 const seedById = new Map(seedArticles.map((article) => [article.id, article]));
 
@@ -116,7 +116,7 @@ function parse(raw: string | null): StoredNews {
   // 保存された値が壊れていても、使用中のIDと重ならず、IDとして使える範囲に収める
   const savedNextId =
     Number.isSafeInteger(parsed.nextId) && (parsed.nextId as number) <= MAX_ID ? (parsed.nextId as number) : 0;
-  const nextId = Math.max(FIRST_NEW_ID, savedNextId, ...articles.map((article) => Number(article.id) + 1));
+  const nextId = Math.max(FIRST_ID, savedNextId, ...articles.map((article) => Number(article.id) + 1));
 
   return { articles, deletedIds, nextId };
 }
@@ -293,11 +293,8 @@ export function setPreviewDraft(value: unknown) {
 
 export type SaveResult =
   | { ok: true; id: string }
-  /**
-   * invalid: 入力が保存できる形でない / not-found: 記事がない（別のタブで削除されたなど） / storage: 保存に失敗した /
-   * limit: 追加できる数の上限に達した（その先のIDのページは作っていない）
-   */
-  | { ok: false; reason: "invalid" | "not-found" | "storage" | "limit" };
+  /** invalid: 入力が保存できる形でない / not-found: 記事がない（別のタブで削除されたなど） / storage: 保存に失敗した */
+  | { ok: false; reason: "invalid" | "not-found" | "storage" };
 
 /** 保存する。容量の上限に達したときや、保存が許可されていないときは false。 */
 function write(stored: StoredNews) {
@@ -337,7 +334,7 @@ export function getNextArticleId() {
 }
 
 function getFirstId() {
-  return String(FIRST_NEW_ID);
+  return String(FIRST_ID);
 }
 
 /** 次に追加する記事のID（getNextArticleId）を、描画の中で使うためのフック。 */
@@ -353,7 +350,6 @@ export type ArticleInput = WithoutId<Article>;
 /** 記事を追加する。成功したら付けたIDを返す。 */
 export function addArticle(input: ArticleInput): SaveResult {
   const stored = readStored();
-  if (stored.nextId > LAST_NEW_ID) return { ok: false, reason: "limit" };
   const id = String(stored.nextId);
   const article = parseArticle({ ...input, id });
   if (!article) return { ok: false, reason: "invalid" };

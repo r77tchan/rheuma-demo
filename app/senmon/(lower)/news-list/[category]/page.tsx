@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
-import { NewsArchive } from "@/components/news/NewsArchive";
+import { Suspense } from "react";
+import { NewsSection } from "@/components/news/NewsSection";
 import { homeCrumb, PageTitle } from "@/components/news/PageTitle";
+import { NewsArchiveFromQuery } from "@/components/news/QueryPages";
 import { getCategory, siteCategories } from "@/data/news";
 
 export function generateStaticParams() {
@@ -17,7 +19,9 @@ export default async function SenmonNewsCategoryPage({
   return (
     <>
       <PageTitle site="senmon" crumbs={[homeCrumb("senmon"), { label: category.label }]} />
-      <NewsArchive site="senmon" category={{ id, label: category.label }} />
+      <Suspense fallback={<NewsSection site="senmon" />}>
+        <NewsArchiveFromQuery site="senmon" category={{ id, label: category.label }} />
+      </Suspense>
     </>
   );
 }

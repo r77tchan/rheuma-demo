@@ -118,7 +118,7 @@ function ArticleRow({
 }) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const editHref = `/admin/${article.id}/`;
+  const editHref = `/admin/edit/?id=${article.id}`;
 
   useLayoutEffect(() => () => setConfirming(false), []);
 

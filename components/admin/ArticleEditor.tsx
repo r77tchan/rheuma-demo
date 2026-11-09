@@ -6,7 +6,6 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { siteCategories, type Article, type Placements, type SiteId } from "@/data/news";
 import { setFlash } from "@/lib/adminFlash";
 import { isBodyEmpty } from "@/lib/bodyHtml";
-import { FIRST_NEW_ID, LAST_NEW_ID } from "@/lib/staticPages";
 import {
   addArticle,
   deleteArticle,
@@ -147,7 +146,6 @@ const saveErrorMessages: Record<Extract<SaveResult, { ok: false }>["reason"], st
   invalid: "保存できない値が入っています。入力内容を見直してください。",
   "not-found": "この記事は削除されています。保存できませんでした。",
   storage: "保存できませんでした。ブラウザの保存容量がいっぱいか、保存が許可されていない可能性があります。",
-  limit: `デモで追加できる記事は${LAST_NEW_ID - FIRST_NEW_ID + 1}件までです。「初期状態に戻す」を押すと、また追加できます。`,
 };
 
 /** 2つの記事の中身が同じか。開いたあとで記事が変わったか（別のタブで更新されたなど）を見るのに使う。 */
@@ -340,9 +338,6 @@ function ArticleForm({
           <h1 className="text-[22px] font-bold">{isNew ? "新規作成" : "記事の編集"}</h1>
           {!isNew && <span className="text-[13px] text-[#666]">ID: {id}</span>}
         </div>
-        {isNew && Number(nextId) > LAST_NEW_ID && (
-          <p className="mt-4 rounded-md bg-[#fdf2f2] px-4 py-3 font-bold text-[#c62828]">{saveErrorMessages.limit}</p>
-        )}
 
         {/* 種類 */}
         <fieldset className="mt-6">
