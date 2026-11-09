@@ -33,3 +33,24 @@ export function setFlash(flash: AdminFlash | null) {
 export function useFlash() {
   return useSyncExternalStore(subscribe, getFlash, getNoFlash);
 }
+
+// 読み込み直したあとに出すお知らせ（初期状態に戻したあとは、隠れて残った画面を消すために読み込み直す）
+const RELOAD_FLASH_KEY = "rheuma-demo:admin-flash";
+
+/** お知らせを残して、ページを読み込み直す。お知らせは文言だけを渡す。 */
+export function reloadWithFlash(message: string) {
+  try {
+    window.sessionStorage.setItem(RELOAD_FLASH_KEY, message);
+  } catch {}
+  window.location.reload();
+}
+
+/** 読み込み直す前に残したお知らせを出す。useEffect の中で呼ぶ。 */
+export function restoreReloadFlash() {
+  let message: string | null = null;
+  try {
+    message = window.sessionStorage.getItem(RELOAD_FLASH_KEY);
+    window.sessionStorage.removeItem(RELOAD_FLASH_KEY);
+  } catch {}
+  if (message) setFlash({ message, links: [] });
+}

@@ -1,9 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { siteCategories, type Article, type Placements, type SiteId } from "@/data/news";
 import { setFlash } from "@/lib/adminFlash";
+import { isBodyEmpty } from "@/lib/bodyHtml";
 import {
   addArticle,
   deleteArticle,
@@ -21,11 +23,18 @@ import {
   buttonClass,
   fieldClass,
   formatJapaneseDate,
+  isEnter,
   SITE_IDS,
   siteArticleHref,
   siteLabels,
   siteShortLabels,
 } from "./ui";
+
+// エディタ（Tiptap）は、「本文を書く」を選んだときだけ読み込む
+const BodyEditor = dynamic(() => import("./BodyEditor").then((module) => module.BodyEditor), {
+  ssr: false,
+  loading: () => <p className="rounded-md border border-[#c3cad3] bg-white px-4 py-3 text-[#666]">読み込んでいます…</p>,
+});
 
 type MainCategory = keyof typeof siteCategories.main;
 type SubSite = Exclude<SiteId, "main">;
@@ -97,7 +106,7 @@ function validate(form: FormState) {
     else if (!isHttpUrl(url) || !/^https?:\/\//i.test(url)) {
       errors.linkUrl = "http:// か https:// で始まるURLを入力してください。";
     }
-  } else if (!form.bodyHtml.trim()) {
+  } else if (isBodyEmpty(form.bodyHtml)) {
     errors.bodyHtml = "本文を入力してください。";
   }
   if (!DATE_PATTERN.test(form.publishedAt)) errors.publishedAt = "公開日を入力してください。";
@@ -150,6 +159,11 @@ const saveErrorMessages: Record<Extract<SaveResult, { ok: false }>["reason"], st
   storage: "保存できませんでした。ブラウザの保存容量がいっぱいか、保存が許可されていない可能性があります。",
 };
 
+/** 2つの記事の中身が同じか。開いたあとで記事が変わったか（別のタブで更新されたなど）を見るのに使う。 */
+function isSameContent(a: Article | undefined, b: Article | undefined) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /**
  * 記事の新規作成（id なし）と編集。ブラウザに保存した記事を読むので、ハイドレーションのあとで描く。
  * 保存や削除をしたら入力欄を作り直す（ページは移動後も残るので、前の入力を残さないため）。
@@ -184,31 +198,44 @@ function EditorLoader({
   today: string;
   onDone: () => void;
 }) {
-  // 開いた時点の記事で入力欄を作る。開いたあとで別のタブで削除されても入力は消さず、保存するときに知らせる。
-  const [initial] = useState(() => (id === undefined || article ? createForm(article, today) : null));
+  // 開いた時点の記事で入力欄を作る。開いたあとで別のタブで削除されても、入力の途中なら消さず、保存するときに知らせる。
+  const [source] = useState(article);
+  const [initial] = useState(() => (id === undefined || source ? createForm(source, today) : null));
+  // 開いたあとで記事が変わった（別のタブで更新、削除、初期化など）。入力の途中でなければ、今の記事で作り直す。
+  // 入力画面は、一覧に戻ったあとも隠れて残る（Activity）ので、表示し直したときに古い記事のまま出さないため
+  const changed = id !== undefined && !isSameContent(article, source);
 
-  if (!initial) {
-    return (
-      <div className="rounded-lg border border-[#dde2e8] bg-white px-6 py-10 text-center">
-        <p>この記事は見つかりませんでした。削除された可能性があります。</p>
-        <AdminLink href="/admin/" className={`${buttonClass.secondary} mt-4`}>
-          記事一覧に戻る
-        </AdminLink>
-      </div>
-    );
-  }
-  return <ArticleForm id={id} initial={initial} today={today} onDone={onDone} />;
+  if (!initial) return <ArticleNotFound changed={changed} onDone={onDone} />;
+  return <ArticleForm id={id} initial={initial} today={today} changed={changed} onDone={onDone} />;
+}
+
+function ArticleNotFound({ changed, onDone }: { changed: boolean; onDone: () => void }) {
+  useEffect(() => {
+    if (changed) onDone();
+  }, [changed, onDone]);
+
+  return (
+    <div className="rounded-lg border border-[#dde2e8] bg-white px-6 py-10 text-center">
+      <p>この記事は見つかりませんでした。削除された可能性があります。</p>
+      <AdminLink href="/admin/" className={`${buttonClass.secondary} mt-4`}>
+        記事一覧に戻る
+      </AdminLink>
+    </div>
+  );
 }
 
 function ArticleForm({
   id,
   initial,
   today,
+  changed,
   onDone,
 }: {
   id: string | undefined;
   initial: FormState;
   today: string;
+  /** 開いたあとで記事が変わったか。 */
+  changed: boolean;
   onDone: () => void;
 }) {
   const router = useRouter();
@@ -220,10 +247,21 @@ function ArticleForm({
   const [showErrors, setShowErrors] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // 本文の画像やPDFを取り込んでいる途中か
+  const [uploading, setUploading] = useState(false);
 
   const isNew = id === undefined;
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
-  useLeaveGuard(dirty, onDone);
+  // 取り込みの途中は、本文にまだ入っていなくても入力の途中として扱う
+  const editing = dirty || uploading;
+  useLeaveGuard(editing, onDone);
+
+  useEffect(() => {
+    if (changed && !editing) onDone();
+  }, [changed, editing, onDone]);
+
+  // 削除の確認は、ページが隠れたら閉じる（Activity で開いたまま残さない）
+  useLayoutEffect(() => () => setConfirmingDelete(false), []);
 
   const errors = validate(form);
   const shownErrors = showErrors ? errors : {};
@@ -277,6 +315,11 @@ function ArticleForm({
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
+    // 取り込みの途中で公開すると、その画像やPDFが抜けたまま保存される
+    if (uploading) {
+      setSaveError("画像やPDFを取り込んでいます。終わってから、もう一度押してください。");
+      return;
+    }
     if (Object.keys(errors).length > 0) {
       setShowErrors(true);
       requestAnimationFrame(() =>
@@ -324,7 +367,16 @@ function ArticleForm({
 
   return (
     <div className="pc:grid pc:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] pc:items-start pc:gap-6">
-      <form ref={formRef} onSubmit={submit} noValidate className="rounded-lg border border-[#dde2e8] bg-white p-5 tb:p-6">
+      <form
+        ref={formRef}
+        onSubmit={submit}
+        // タイトルなどの欄で Enter を押しても、送信（公開、更新）しない。公開はボタンでだけ行う
+        onKeyDown={(event) => {
+          if (event.target instanceof HTMLInputElement && isEnter(event)) event.preventDefault();
+        }}
+        noValidate
+        className="rounded-lg border border-[#dde2e8] bg-white p-5 tb:p-6"
+      >
         <div className="flex flex-wrap items-baseline gap-x-4">
           <h1 className="text-[22px] font-bold">{isNew ? "新規作成" : "記事の編集"}</h1>
           {!isNew && <span className="text-[13px] text-[#666]">ID: {id}</span>}
@@ -396,17 +448,18 @@ function ArticleForm({
           </div>
         ) : (
           <div className="mt-6">
-            <p className="font-bold">本文</p>
-            {/* 本文のエディタは次の段階で作る。それまでは保存されている本文をそのまま使う */}
-            <p className="mt-2 rounded-md bg-[#fff8e1] px-3 py-2 text-[14px]">
-              本文の入力欄は、次の段階で作ります。今は、保存されている本文をそのまま使います。
+            <p id={`${fieldId}-body`} className="font-bold">
+              本文
             </p>
-            {form.bodyHtml && (
-              <div
-                className="article-body mt-3 max-h-[240px] overflow-auto rounded-md border border-[#dde2e8] px-4 py-3 text-[15px]"
-                dangerouslySetInnerHTML={{ __html: form.bodyHtml }}
+            <div className="mt-2">
+              <BodyEditor
+                value={form.bodyHtml}
+                onChange={(bodyHtml) => update({ bodyHtml })}
+                onBusyChange={setUploading}
+                labelId={`${fieldId}-body`}
+                invalid={Boolean(shownErrors.bodyHtml)}
               />
-            )}
+            </div>
             {error("bodyHtml")}
           </div>
         )}

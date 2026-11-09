@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { blockFileDrop } from "@/lib/blockFileDrop";
 import { setPreviewDraft } from "@/lib/newsStore";
 import { isPreviewMessage, PREVIEW_ANCHOR, PREVIEW_FRAME_NAME, type PreviewMessage } from "@/lib/preview";
 
@@ -47,10 +48,13 @@ export function PreviewReceiver() {
 
     window.addEventListener("message", onMessage);
     window.addEventListener("click", onClick, true);
+    // プレビューの上にファイルを落としても、iframe の中でファイルが開かないようにする（親の window では止められない）
+    const unblockFileDrop = blockFileDrop(window);
     post({ type: "preview:ready" });
     return () => {
       window.removeEventListener("message", onMessage);
       window.removeEventListener("click", onClick, true);
+      unblockFileDrop();
     };
   }, []);
 

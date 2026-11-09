@@ -46,6 +46,14 @@ export function LeaveGuardProvider({ children }: { children: React.ReactNode }) 
     [],
   );
 
+  // 確認が出ているときに戻る、進むを押したら閉じる（移動したあとに残さない）
+  useEffect(() => {
+    if (!pendingHref) return;
+    const close = () => setPendingHref(null);
+    window.addEventListener("popstate", close);
+    return () => window.removeEventListener("popstate", close);
+  }, [pendingHref]);
+
   const leave = () => {
     if (!pendingHref) return;
     guardRef.current?.discard();

@@ -93,7 +93,8 @@ type BodyPattern = "text" | "textLink" | "headingLink" | "listLink" | "image" | 
 
 const DUMMY_URL = "https://example.com/";
 
-const DUMMY_IMAGE =
+/** 初期記事のダミー画像。エディタは、この画像だけ src のまま残す（components/admin/editorExtensions.ts）。 */
+export const DUMMY_IMAGE =
   "data:image/svg+xml," +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="#c4c4c4"/></svg>',

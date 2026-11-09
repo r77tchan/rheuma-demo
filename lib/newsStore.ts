@@ -7,8 +7,10 @@ import {
   type Placements,
   type SiteId,
 } from "@/data/news";
+import { extractFileIds } from "./bodyHtml";
+import { clearFiles, deleteUnusedFiles } from "./fileStore";
 
-// 記事の読み書きはすべてここを通す。保存先はブラウザの localStorage。
+// 記事の読み書きはすべてここを通す。保存先はブラウザの localStorage（本文の画像とPDFは IndexedDB。lib/fileStore.ts）。
 // 保存するのは初期記事との差分（追加、編集した記事と、削除した初期記事のID）だけにして、
 // 後から初期記事を足しても表示されるようにする。
 // 未保存のあいだと、サーバーでの描画やハイドレーションのときは初期記事を返す。
@@ -310,7 +312,19 @@ function write(stored: StoredNews) {
     return false;
   }
   notify();
+  cleanUpFiles();
   return true;
+}
+
+/**
+ * どの記事も使っていない画像とPDFを消す（終わるのは待たない）。別のタブで保存した記事も localStorage にあるので数に入る。
+ * 入力中でまだ保存していない画像は、取り込んでから24時間は消さない（lib/fileStore.ts の KEEP_UNUSED_MS）。
+ */
+function cleanUpFiles() {
+  const used = new Set(
+    merge(readStored()).flatMap((article) => (article.kind === "body" ? extractFileIds(article.bodyHtml) : [])),
+  );
+  void deleteUnusedFiles(used);
 }
 
 /**
@@ -382,8 +396,9 @@ export function deleteArticle(id: string): SaveResult {
 }
 
 /**
- * 保存した内容を消して、初期状態に戻す。保存データが壊れていても使えるように、中身は読まない。
- * 画像とPDF（IndexedDB）も消すようになるので、終わるのを待てる形にしてある。
+ * 保存した内容（記事と、画像とPDF）を消して、初期状態に戻す。保存データが壊れていても使えるように、中身は読まない。
+ * 記事を消せなかったときだけ false。ファイルを消せなくても、どの記事からも使われないので、あとの掃除で消える。
+ * ファイルを消すのは、応答がなければ数秒で待つのをやめる（エラー画面のボタンが止まったままにならないように）。
  */
 export async function resetDemoData() {
   let ok = true;
@@ -395,5 +410,6 @@ export async function resetDemoData() {
     }
   }
   notify();
+  await clearFiles();
   return ok;
 }

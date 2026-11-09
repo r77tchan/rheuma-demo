@@ -131,6 +131,11 @@
     background-color: var(--color-brand);
   }
 
+  /* 投稿画面で作った箇条書きは、必ず <li><p>…</p></li> になる。元サイトで多い <li>…</li> と同じ見た目にする */
+  .article-body li > p {
+    margin: 0;
+  }
+
   .article-body ul li::after {
     content: "";
     position: absolute;
@@ -148,6 +153,58 @@
       margin-top: 3em;
       font-size: 24px;
     }
+  }
+
+  /* 投稿画面の本文のエディタ（components/admin/BodyEditor.tsx）。中の見た目は .article-body（メインの本文）と同じ */
+  .body-editor .ProseMirror {
+    min-height: 260px;
+    padding: 12px 16px;
+    outline: none;
+    font-size: 16px;
+  }
+
+  .body-editor .ProseMirror > :first-child {
+    margin-top: 0;
+  }
+
+  /* PDFのリンクは href を持たないが、動かないリンクの見た目（禁止マークのカーソル）にしない */
+  .body-editor .ProseMirror a {
+    cursor: text;
+  }
+
+  /* URLのリンクと見分けられるよう、PDFのリンクには「PDF」と添える（エディタの中だけ。サイトには出ない） */
+  .body-editor .ProseMirror a[data-file-id]::after {
+    content: "PDF";
+    margin-left: 4px;
+    padding: 0 4px;
+    border-radius: 3px;
+    background-color: #e8eef6;
+    color: var(--color-brand);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.6;
+    text-decoration: none;
+    vertical-align: 2px;
+    display: inline-block;
+  }
+
+  .body-editor .editor-image {
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: middle;
+  }
+
+  .body-editor .editor-image.ProseMirror-selectednode {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  .body-editor .editor-image-missing {
+    display: inline-block;
+    padding: 24px 32px;
+    border: 1px dashed #c62828;
+    color: #c62828;
+    font-size: 14px;
   }
 
   /* /rheuma/ の配色と本文の違い。bg-brand や text-brand は、この中ではこの色になる */

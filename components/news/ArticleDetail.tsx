@@ -5,6 +5,7 @@ import { siteNews, type SiteId } from "@/data/news";
 import { useHydrated, useSiteArticles, type SiteArticle } from "@/lib/newsStore";
 import { articleHref, categoryHref, listHref } from "@/lib/newsUrls";
 import { Chevron } from "../parts";
+import { ArticleBody } from "./ArticleBody";
 import { ArticleHeading, NewsNotFound, NewsSection } from "./NewsSection";
 import { homeCrumb, listCrumbs, PageTitle } from "./PageTitle";
 
@@ -51,7 +52,7 @@ export function ArticleDetail({ site, id }: { site: SiteId; id: string }) {
         <time dateTime={article.publishedAt} className={`block ${site === "rheuma" ? "mb-2.5" : "mb-4"}`}>
           {article.publishedAt}
         </time>
-        <div className="article-body" dangerouslySetInnerHTML={{ __html: article.bodyHtml }} />
+        <ArticleBody html={article.bodyHtml} />
 
         <div className="flex flex-wrap items-center justify-center tb:flex-nowrap pc:justify-between">
           <div className="mt-8 tb:ml-8 pc:mr-8 pc:ml-0 pc:w-[150px]">

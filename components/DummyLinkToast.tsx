@@ -16,6 +16,8 @@ export function DummyLinkToast() {
     const onClick = (event: MouseEvent) => {
       if (!(event.target instanceof Element)) return;
       if (!event.target.closest("a:not([href]), [data-dummy]")) return;
+      // 投稿画面の本文のエディタの中のPDFのリンクは href を持たないが、動かないリンクではない
+      if (event.target.closest('[contenteditable="true"]')) return;
       setVisible(true);
       clearTimeout(timer);
       timer = setTimeout(() => setVisible(false), VISIBLE_MS);

@@ -29,6 +29,11 @@ export function siteArticleHref(site: SiteId, article: Pick<Article, "id" | "kin
   return article.kind === "body" ? `${siteNews[site].basePath}/news/${article.id}/` : listHref(site);
 }
 
+/** 入力欄の Enter（日本語の変換を確定する Enter は除く）。Safari は変換の確定で keyCode が 229 になる。 */
+export function isEnter(event: React.KeyboardEvent) {
+  return event.key === "Enter" && !event.nativeEvent.isComposing && event.keyCode !== 229;
+}
+
 /** 「2026年11月8日」の形。 */
 export function formatJapaneseDate(date: string) {
   const [year, month, day] = date.split("-").map(Number);

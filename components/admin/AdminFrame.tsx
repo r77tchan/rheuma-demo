@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { blockFileDrop } from "@/lib/blockFileDrop";
 import { SITE_IDS, siteShortLabels, siteTopHref } from "./ui";
 import { AdminLink, LeaveGuardProvider } from "./LeaveGuard";
 
@@ -7,6 +9,9 @@ import { AdminLink, LeaveGuardProvider } from "./LeaveGuard";
 // 今いるページの表示に usePathname は使わない（ビルド時にIDが分からないページで止まるため。doc/メモ.md）。
 
 export function AdminFrame({ children }: { children: React.ReactNode }) {
+  // エディタの外にファイルを落としても、ページが移動しないようにする（種類が「リンクだけ」のときも）
+  useEffect(() => blockFileDrop(window), []);
+
   return (
     <LeaveGuardProvider>
       <div className="min-h-screen bg-[#f4f6f9] text-[15px] leading-[1.7]">

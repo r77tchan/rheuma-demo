@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { getCategory, type Article, type SiteId } from "@/data/news";
-import { setFlash, useFlash } from "@/lib/adminFlash";
+import { reloadWithFlash, restoreReloadFlash, setFlash, useFlash } from "@/lib/adminFlash";
 import {
   compareNewest,
   deleteArticle,
@@ -30,6 +30,8 @@ export function ArticleList() {
   const editedIds = useEditedIds();
   const today = useToday();
   const [filter, setFilter] = useState<Filter>("all");
+
+  useEffect(() => restoreReloadFlash(), []);
 
   if (!hydrated) return <p className="py-10 text-center text-[#666]">読み込んでいます…</p>;
 
@@ -115,13 +117,21 @@ function ResetButton() {
   const [confirming, setConfirming] = useState(false);
   const [resetting, setResetting] = useState(false);
 
+  // 開いた確認は、ページが隠れたら閉じる（Activity で開いたまま残さない）
+  useLayoutEffect(() => () => setConfirming(false), []);
+
   const reset = async () => {
     setResetting(true);
     const ok = await resetDemoData();
+    if (ok) {
+      // 隠れて残った編集画面（開いたときの記事のまま）と、覚えている画像のURLを消すため、読み込み直す
+      reloadWithFlash("初期状態に戻しました。");
+      return;
+    }
     setResetting(false);
     setConfirming(false);
     setFlash({
-      message: ok ? "初期状態に戻しました。" : "初期状態に戻せませんでした。ブラウザの保存が許可されていない可能性があります。",
+      message: "初期状態に戻せませんでした。ブラウザの保存が許可されていない可能性があります。",
       links: [],
     });
   };
@@ -159,6 +169,8 @@ function ArticleRow({
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(false);
   const editHref = `/admin/${article.id}/`;
+
+  useLayoutEffect(() => () => setConfirming(false), []);
 
   const remove = () => {
     const result = deleteArticle(article.id);
