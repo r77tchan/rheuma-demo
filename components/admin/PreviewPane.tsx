@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { siteNews, type Article, type SiteId } from "@/data/news";
+import type { Article, SiteId } from "@/data/news";
 import { isPreviewMessage, PREVIEW_FRAME_NAME, type PreviewMessage } from "@/lib/preview";
-import { siteShortLabels, siteTopHref, toggleClass } from "./ui";
+import { articlePageUrl, siteShortLabels, siteTopUrl, toggleClass } from "./ui";
 
 // プレビュー。実際のページを iframe で開き、下書きを postMessage で渡す（lib/preview.ts）。
 // iframe の中のメディアクエリは iframe の幅で決まるので、PC幅は1440pxで開いて枠に合わせて縮める。
@@ -64,7 +64,7 @@ export function PreviewPane({ draft, sites }: { draft: Article; sites: SiteId[] 
       {activeSite ? (
         <PreviewFrame
           key={`${activeSite}|${activeView}|${device}`}
-          src={activeView === "detail" ? `${siteNews[activeSite].basePath}/news/${draft.id}/` : siteTopHref(activeSite)}
+          src={activeView === "detail" ? articlePageUrl(activeSite, draft.id) : siteTopUrl(activeSite)}
           width={DEVICE_WIDTHS[device]}
           draft={draft}
           scroll={activeView === "top"}

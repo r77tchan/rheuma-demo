@@ -1,4 +1,5 @@
 import { siteNews, type Article, type SiteId } from "@/data/news";
+import { withBasePath } from "@/lib/basePath";
 import { listHref } from "@/lib/newsUrls";
 
 // 投稿画面の文言と見た目。元サイトにない画面なので、サイト名は役割で呼ぶ（正式名はダミーのため使わない）。
@@ -19,14 +20,21 @@ export const siteLabels: Record<SiteId, string> = {
   senmon: "医療関係者向けサイト（/senmon/）",
 };
 
+// 下の3つは、生の <a> と iframe の src に渡すURL（公開URLの先頭のパスが付いている）。Link や router.push には渡さない。
+
 /** サイトのトップのURL。 */
-export function siteTopHref(site: SiteId) {
-  return `${siteNews[site].basePath}/`;
+export function siteTopUrl(site: SiteId) {
+  return withBasePath(`${siteNews[site].basePath}/`);
+}
+
+/** 記事のページのURL。 */
+export function articlePageUrl(site: SiteId, id: string) {
+  return withBasePath(`${siteNews[site].basePath}/news/${id}/`);
 }
 
 /** 記事がそのサイトで見られる場所。本文のある記事は記事のページ、リンクだけの記事はお知らせ一覧。 */
-export function siteArticleHref(site: SiteId, article: Pick<Article, "id" | "kind">) {
-  return article.kind === "body" ? `${siteNews[site].basePath}/news/${article.id}/` : listHref(site);
+export function siteArticleUrl(site: SiteId, article: Pick<Article, "id" | "kind">) {
+  return article.kind === "body" ? articlePageUrl(site, article.id) : withBasePath(listHref(site));
 }
 
 /** 入力欄の Enter（日本語の変換を確定する Enter は除く）。Safari は変換の確定で keyCode が 229 になる。 */

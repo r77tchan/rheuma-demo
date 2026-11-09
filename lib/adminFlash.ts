@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from "react";
+import { withBasePath } from "./basePath";
 
 // 投稿画面で、保存したあとに一覧の上に出すお知らせ。ページをまたいで渡すので、モジュールに持つ（保存はしない）。
-// 一覧のページはページ移動後も残る（Activity）ので、次の保存か、閉じるボタンで入れ替わるまで出しておく。
+// 一覧を離れて戻っても、次の保存か、閉じるボタンで入れ替わるまで出しておく。
 
 export type AdminFlash = {
   message: string;
@@ -43,8 +44,7 @@ export function reloadListWithFlash(message: string) {
     window.sessionStorage.setItem(RELOAD_FLASH_KEY, message);
   } catch {}
   // 画面の移動（router.push）ではなく、文書ごと読み込み直す。隠れて残った画面と、覚えている blob URL を消すため
-  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  window.location.assign("/admin/");
+  window.location.assign(withBasePath("/admin/"));
 }
 
 /** 読み込み直す前に残したお知らせを出す。useEffect の中で呼ぶ。 */

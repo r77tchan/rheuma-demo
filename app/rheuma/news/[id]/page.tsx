@@ -1,13 +1,11 @@
 import { Suspense } from "react";
 import { ArticleDetail } from "@/components/news/ArticleDetail";
 import { listCrumbs, PageTitle } from "@/components/news/PageTitle";
-import { seedArticles } from "@/data/news";
+import { articleIdParams } from "@/lib/staticPages";
 
-/** 初期記事のぶんだけ事前に作る。投稿画面で作った記事はブラウザ側で組み立てる。 */
+/** 起こりうるIDのぶんだけ事前に作る（lib/staticPages.ts）。中身はブラウザで保存データから組み立てる。 */
 export function generateStaticParams() {
-  return seedArticles
-    .filter((article) => article.kind === "body" && article.placements.rheuma)
-    .map((article) => ({ id: article.id }));
+  return articleIdParams();
 }
 
 export default function RheumaNewsDetailPage({ params }: PageProps<"/rheuma/news/[id]">) {

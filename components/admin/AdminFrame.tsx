@@ -5,7 +5,7 @@ import { blockFileDrop } from "@/lib/blockFileDrop";
 import { DemoNotice } from "./DemoNotice";
 import { ExternalLinkIcon } from "./ExternalLinkIcon";
 import { AdminLink, LeaveGuardProvider } from "./LeaveGuard";
-import { SITE_IDS, siteShortLabels, siteTopHref } from "./ui";
+import { SITE_IDS, siteShortLabels, siteTopUrl } from "./ui";
 
 // 投稿画面の枠。サイトのヘッダーやフッターは使わない。
 // 今いるページの表示に usePathname は使わない（ビルド時にIDが分からないページで止まるため。doc/メモ.md）。
@@ -29,7 +29,7 @@ export function AdminFrame({ children }: { children: React.ReactNode }) {
               {SITE_IDS.map((site) => (
                 <a
                   key={site}
-                  href={siteTopHref(site)}
+                  href={siteTopUrl(site)}
                   target="_blank"
                   rel="noopener"
                   className="text-brand underline hover:no-underline"

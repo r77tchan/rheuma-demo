@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import { ArticleEditor } from "@/components/admin/ArticleEditor";
-import { seedArticles } from "@/data/news";
+import { articleIdParams } from "@/lib/staticPages";
 
-/** 初期記事のぶんだけ事前に作る。投稿画面で追加した記事はブラウザ側で組み立てる（/news/[id]/ と同じ形）。 */
+/** 起こりうるIDのぶんだけ事前に作る（lib/staticPages.ts）。中身はブラウザで保存データから組み立てる。 */
 export function generateStaticParams() {
-  return seedArticles.map((article) => ({ id: article.id }));
+  return articleIdParams();
 }
 
 export default function EditArticlePage({ params }: PageProps<"/admin/[id]">) {
